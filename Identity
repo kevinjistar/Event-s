@@ -1,0 +1,533 @@
+# Event’s — Document de Référence & Identité Produit
+
+**Version 1.0 | Document Fondateur**  
+*Ce document définit l’identité, la vision et les principes directeurs immuables de Event’s.*
+
+-----
+
+## 1. IDENTITÉ & POSITIONNEMENT
+
+### Vision
+
+**Event’s transforme les intentions sociales en événements réels.**
+
+### Mission
+
+Maximiser le taux de conversion entre “On devrait se voir” et les moments vécus ensemble.
+
+### Positionnement stratégique
+
+Event’s n’est pas un réseau social. Event’s n’est pas un outil de gestion de projet.  
+**Event’s est un accélérateur social** — le chainon manquant entre la conversation et l’action.
+
+### Proposition de valeur unique
+
+“Moins de bla-bla, plus de vrais moments.”
+
+Event’s augmente WhatsApp et Doodle, il ne les remplace pas. Il doit être complémentaire, jamais disruptif.
+
+-----
+
+## 2. MÉTRIQUE DE SUCCÈS ABSOLUE
+
+### KPI Principal (North Star Metric)
+
+**Taux d’événements réellement réalisés / événements créés**
+
+**Cible minimale :** 60%
+
+Tout ce qui n’optimise pas cette métrique est secondaire ou superflu.
+
+### Métriques secondaires
+
+- Temps moyen entre création et confirmation d’événement (objectif : <48h)
+- Taux de retour utilisateur sur 30 jours (objectif : >70%)
+- Nombre moyen de clics pour confirmer un événement (objectif : <15)
+
+-----
+
+## 3. PRINCIPES DIRECTEURS IMMUABLES
+
+### Principe 1 : “Fast First, Detailed Later”
+
+Event’s doit permettre deux modes d’utilisation coexistants :
+
+- **Mode Express :** Créer “Bières ce soir ?” en 3 clics maximum
+- **Mode Planification :** Gérer un week-end complexe avec votes, contributions et budget
+
+Le Mode Express est prioritaire. Si une fonctionnalité ralentit ce parcours, elle doit être rejetée ou rendue optionnelle.
+
+### Principe 2 : “Simplicité radicale”
+
+Chaque clic, chaque écran, chaque fonctionnalité doit avoir une justification claire.  
+**Test de validation :** Si l’action prend plus de temps sur Event’s que sur WhatsApp, l’UX a échoué.
+
+### Principe 3 : “Jamais bloquer la conversation”
+
+Le chat doit être accessible immédiatement dès la création d’un événement.  
+Les votes et actions sont épinglés en haut, mais ne bloquent jamais la discussion libre.
+
+**Règle d’or :** Si un utilisateur ouvre WhatsApp en parallèle, Event’s a perdu.
+
+### Principe 4 : “Valeur immédiate”
+
+L’utilisateur doit percevoir le bénéfice dès le premier événement organisé.  
+Pas de courbe d’apprentissage. Pas de tutoriel obligatoire.
+
+### Principe 5 : “Itération rapide”
+
+Mieux vaut un MVP en 6 semaines qu’un produit parfait jamais fini.  
+Chaque feature doit être testée avec de vrais utilisateurs avant d’être étendue.
+
+-----
+
+## 4. ARCHITECTURE CONCEPTUELLE
+
+### Groupe cible
+
+**4 à 12 personnes** — Le cercle d’amis proche.
+
+Event’s n’est pas conçu pour les communautés larges (50+ personnes) en V1.
+
+### Flux utilisateur fondamental
+
+#### Onboarding (minimal)
+
+**Obligatoire :**
+
+- Prénom
+- Photo de profil (optionnel mais encouragé)
+
+**Optionnel (ajouté progressivement) :**
+
+- Date d’anniversaire
+- Disponibilités générales (widget visuel : semaine/weekend, jour/soir)
+- Stats et badges (auto-générés par l’usage)
+
+**Interdit à l’onboarding :**
+
+- Formulaires longs
+- Questionnaires de passions/intérêts
+- Demandes d’autorisation multiples
+
+#### Système de vote (approche canonique)
+
+**Rejet définitif :** Entonnoir séquentiel Mois → Semaine → Jour → Heure
+
+**Approche validée :** Sondage de créneaux type Doodle++
+
+1. Le créateur ET les membres proposent 2-5 créneaux complets (date + heure début/fin)
+1. Vote unique en trois options :
+
+- ✅ **“Je peux”** (vert)
+- 🤔 **“Si nécessaire”** (orange)
+- ❌ **“Pas dispo”** (rouge)
+
+1. Visualisation par heatmap : les créneaux optimaux s’illuminent en vert foncé
+1. Validation intelligente :
+
+- Auto (défaut) : Si un créneau atteint 80% de “Je peux”
+- Manuelle : Le créateur choisit parmi le top 3
+- Deadline : 48h avant la date la plus proche → notification “Confirme ta présence !”
+
+#### Gestion des “Peut-être” (killer feature)
+
+Le “peut-être” est souvent un “non poli” qui bloque les décisions.
+
+**Solutions intégrées :**
+
+- Option **“Soft commit”** : “Je viens si au moins X personnes viennent”
+- Notification progressive : “Il reste 24h pour confirmer”
+- Conversion automatique : Après deadline, “Peut-être” → “Non” sauf confirmation explicite
+
+-----
+
+## 5. ÉTATS D’ÉVÉNEMENT CANONIQUES
+
+|État               |Description                |CTA utilisateur      |Badge|
+|-------------------|---------------------------|---------------------|-----|
+|**💡 Idée**         |Proposition non validée    |“Voter mon intérêt”  |🟡    |
+|**📅 Vote en cours**|Sondage de dates actif     |“Voter mes dispos”   |🟠    |
+|**⏳ En validation**|Choix majoritaire identifié|“Attendre validation”|🟣    |
+|**✅ Confirmé**     |Tout verrouillé            |“Voir détails” + 📅   |🟢    |
+|**📸 Passé**        |Événement terminé          |“Ajouter photos”     |⚪    |
+|**❌ Annulé**       |Événement annulé           |—                    |🔴    |
+
+**Règle :** Chaque état n’a qu’une seule action principale pour éviter la paralysie du choix.
+
+-----
+
+## 6. RÔLES & MODÉRATION
+
+### Rôles définis
+
+|Rôle               |Permissions                                |Acquisition         |
+|-------------------|-------------------------------------------|--------------------|
+|**Créateur**       |Lance l’événement, valide les choix, modère|Crée l’événement    |
+|**Co-organisateur**|Idem créateur                              |Nommé par créateur  |
+|**Membre**         |Vote, propose options, discute             |Appartient au groupe|
+
+### Mécanismes anti-blocage
+
+- **Système de “Poke”** : Les membres peuvent notifier le créateur avec “⏰ On attend ta validation !”
+- **Validation automatique** : Si quorum atteint + 24h sans réaction du créateur
+- **Transfert de modération** : Si le créateur quitte le groupe, il doit désigner un successeur ou le système propose un vote
+
+**Principe :** Le créateur ne doit jamais être un point de blocage unique.
+
+-----
+
+## 7. GESTION FINANCIÈRE (règles absolues)
+
+### ❌ INTERDIT EN TOUTE CIRCONSTANCE
+
+- Stocker des numéros de compte bancaire (IBAN/RIB)
+- Gérer de l’argent réel directement dans l’application
+- Promettre des fonctionnalités de paiement intégré en V1
+
+### ✅ APPROCHES AUTORISÉES
+
+**MVP (V1) :** Tracker de dettes simple
+
+- Liste “Qui doit combien à qui”
+- Checkbox “J’ai payé ma part”
+- Aucune transaction financière réelle
+
+**V2 :** Intégration paiement tiers
+
+- Champ “Lien de paiement” : Organisateur colle son lien Lydia/PayPal/Revolut/Tricount
+- Optionnel : Intégration API Stripe pour cagnotte événementielle (avec validation légale)
+
+**Justification :** Éviter tout cauchemar légal, technique et de sécurité en phase MVP.
+
+-----
+
+## 8. ARCHITECTURE TECHNIQUE FIREBASE
+
+### Collections Firestore (structure canonique)
+
+```javascript
+users/
+  {userId}/
+    name: string
+    photoURL: string
+    fcmToken: string
+    preferences: {
+      availabilities: string // "weekdays" | "weekends" | "both"
+    }
+    stats: {
+      eventsCreated: number
+      eventsAttended: number
+      reliabilityScore: number // 0-100
+    }
+
+groups/
+  {groupId}/
+    name: string
+    description: string
+    privacy: string // "public" | "private"
+    members: [
+      {
+        userId: string
+        role: string // "creator" | "co-organizer" | "member"
+      }
+    ]
+    createdAt: timestamp
+
+events/
+  {eventId}/
+    groupId: string
+    title: string
+    description: string
+    status: string // "idea" | "voting" | "pending_validation" | "confirmed" | "past" | "cancelled"
+    createdBy: string
+    organizerIds: [string]
+    
+    dateOptions: [
+      {
+        optionId: string
+        start: timestamp
+        end: timestamp
+        votes: [
+          {
+            userId: string
+            response: string // "yes" | "maybe" | "no"
+          }
+        ]
+      }
+    ]
+    
+    chosenDate: {
+      start: timestamp
+      end: timestamp
+    }
+    
+    contributions: [
+      {
+        item: string
+        takenBy: string // userId
+      }
+    ]
+    
+    expenses: {
+      link: string
+      amount: number
+      whoPaid: [string] // array of userId
+    }
+    
+    messages/ (subcollection)
+      {messageId}/
+        senderId: string
+        text: string
+        timestamp: timestamp
+```
+
+### Règles de sécurité Firestore (immuables)
+
+- Seuls les membres d’un groupe peuvent lire/écrire ses événements
+- Seuls créateur et co-organisateurs peuvent changer le statut d’un événement
+- Tout membre peut proposer des options de date
+- Tout membre peut voter
+
+-----
+
+## 9. NAVIGATION & ARCHITECTURE D’INFORMATION
+
+### Structure d’application canonique
+
+```
+📱 Event's
+│
+├── 🏠 Dashboard (HUB CENTRAL — point d'entrée unique)
+│   ├── 🔔 Actions requises (priorisées en haut)
+│   ├── 📅 Prochains événements confirmés
+│   └── 💡 Suggestions IA (optionnel V2+)
+│
+├── 👤 Mon Profil
+│   ├── Infos personnelles
+│   ├── 📊 Stats & 🏆 Badges
+│   └── ⏰ Disponibilités générales
+│
+├── 👥 Mes Groupes
+│   └── [Groupe X]
+│       ├── 💬 Discussion générale
+│       ├── 📅 Événements du groupe
+│       └── 👥 Membres
+│
+├── 🎉 Mes Événements (vue transversale tous groupes)
+│   ├── Filtres : par groupe, par statut
+│   ├── 📅 Vue Calendrier mensuel
+│   └── 📋 Vue Liste
+│
+└── 🔍 Recherche (V2+)
+    ├── 👤 Amis
+    └── 👥 Groupes publics
+```
+
+**Principe directeur :** Le Dashboard est le cerveau. Si bien conçu, “Mes Événements” devient un simple filtre avancé.
+
+-----
+
+## 10. INTERFACE CHAT & DISCUSSION
+
+### Architecture d’interface (standard immuable)
+
+```
+┌─────────────────────────────────────┐
+│ 📌 ZONE DE VOTE (épinglée, fixe)    │
+│   🗓️ Dates proposées [Vote ici]    │
+│   🎒 À apporter [Qui prend quoi ?]  │
+│   💰 Dépenses [Qui a payé ?]        │
+└─────────────────────────────────────┘
+┌─────────────────────────────────────┐
+│ 💬 DISCUSSION (scrollable)          │
+│   Alice : "On se retrouve où ?"     │
+│   Bob : "Je propose chez moi"       │
+│   [Messages défilants...]           │
+└─────────────────────────────────────┘
+```
+
+**Règle absolue :** Le chat est ouvert dès la création de l’événement. Jamais de blocage.
+
+-----
+
+## 11. ROADMAP MVP (Phases définies)
+
+### Phase 1 : Core Loop (4-6 semaines) — INVIOLABLE
+
+**Objectif :** Organiser 1 événement réel dans 5 groupes de 4-6 personnes
+
+**Features obligatoires :**
+
+- Auth Firebase (Google + Email)
+- Créer/rejoindre groupe (lien d’invitation)
+- Créer événement simple (titre + description + 2-3 créneaux)
+- Vote sur créneaux (interface Doodle-like)
+- Validation manuelle par créateur
+- Chat dédié à l’événement
+- Dashboard : “Actions requises” + “Prochains événements”
+
+**Critère de succès :** Taux de conversion >50% (événements créés → événements réalisés)
+
+**Features INTERDITES en Phase 1 :**
+
+- Vue Kanban
+- Algorithmes de passions
+- Upload de photos souvenirs
+- IA / suggestions automatiques
+- Intégration calendrier externe
+- Groupes publics
+
+### Phase 2 : Si traction (2-3 mois)
+
+**Déclencheur :** Taux de conversion Phase 1 >50% + 100 utilisateurs actifs
+
+**Features autorisées :**
+
+- Vue Calendrier mensuel
+- Système “À apporter” (liste collaborative)
+- Tracker dépenses simple
+- Notifications push intelligentes
+- Export vers Google/Apple Calendar
+- Validation automatique (quorum)
+
+### Phase 3 : Polish & Scale (6+ mois)
+
+**Déclencheur :** Taux de conversion Phase 2 >60% + 500 utilisateurs actifs
+
+**Features autorisées :**
+
+- Vue Kanban
+- Co-organisateurs & transfert modération
+- Intégration paiement (Lydia/Stripe avec validation légale)
+- IA : suggestions, résumés, détection conflits
+- Galerie photos post-événement
+- Groupes publics + recherche
+- Templates d’événements
+- Gamification avancée
+
+-----
+
+## 12. INTÉGRATION IA (Google AI Studio) — Principes
+
+### Philosophie
+
+L’IA assiste, elle ne décide jamais.  
+L’IA améliore l’expérience, elle ne la remplace pas.
+
+### Cas d’usage validés (Phase 2+)
+
+|Fonctionnalité            |Déclencheur       |Valeur utilisateur                                          |
+|--------------------------|------------------|------------------------------------------------------------|
+|**Détection conflits**    |Événement proposé |“⚠️ Tu as déjà ‘Anniversaire Maman’ le 15 juin”              |
+|**Suggestions proactives**|Météo + historique|“☀️ Il fait beau samedi, rando au Lac X ?”                   |
+|**Résumé discussion**     |Bouton manuel     |Extrait décisions clés du chat                              |
+|**Smart defaults**        |Création événement|Suggère créneaux basés sur dispo groupe                     |
+|**Analyseur d’engagement**|Post-événement    |“48% de participation ce mois → Tester d’autres activités ?”|
+
+### Cas d’usage INTERDITS
+
+- Création automatique d’événements sans validation humaine
+- Validation automatique de dates sans quorum ou consentement utilisateur
+- Suggestions basées sur des données privées non consenties
+- Modération automatique de discussions
+
+-----
+
+## 13. PIÈGES À ÉVITER (Liste d’interdiction)
+
+|❌ Piège                             |💥 Conséquence            |✅ Solution validée                |
+|------------------------------------|-------------------------|----------------------------------|
+|Profil trop détaillé à l’inscription|Abandon onboarding (70%) |Prénom + photo uniquement         |
+|Chat bloqué avant validation        |Fuite vers WhatsApp      |Chat ouvert dès création          |
+|Entonnoir de vote trop long         |Découragement utilisateur|Sondage créneaux en une fois      |
+|Modérateur unique absent            |Événement gelé           |Co-organisateurs + validation auto|
+|Gestion argent réel en V1           |Cauchemar légal/technique|Lien externe ou tracker simple    |
+|Trop de features en V1              |Développement infini     |MVP strict 4-6 semaines           |
+|Feature “cool” sans usage réel      |Complexité inutile       |Tester avant d’implémenter        |
+|Tutorial obligatoire                |Friction onboarding      |Interface intuitive sans tutorial |
+
+-----
+
+## 14. QUESTIONS CRITIQUES TRANCHÉES
+
+### Metric de succès
+
+**Nombre d’événements créés OU réalisés ?**  
+→ **Réponse : Réalisés** (sinon juste du bruit)
+
+### Taille groupe cible
+
+**3 ? 10 ? 50 personnes ?**  
+→ **Réponse : 4-12** (cercle d’amis proche)
+
+### Cold start problem
+
+**Comment engager si les amis ne sont pas là ?**  
+→ **Réponse : Invitation virale** (“Rejoins Event’s pour voter sur notre soirée !”)
+
+### Monétisation
+
+**Freemium ? Premium ? Publicité ?**  
+→ **Réponse MVP : Gratuit total**. Monétisation en Phase 3 uniquement.
+
+### Plateforme prioritaire
+
+**iOS ? Android ? Web ?**  
+→ **Réponse : Web-first (PWA)**, puis mobile natif si traction.
+
+-----
+
+## 15. PRINCIPE D’OR FINAL
+
+> **“Event’s doit disparaître derrière l’action. Dire ‘On organise ça sur Event’s !’ doit être plus simple qu’un thread WhatsApp, jamais plus compliqué.”**
+
+### Les 3 Commandements
+
+1. **Simplicité radicale** → Chaque clic doit avoir une justification
+1. **Valeur immédiate** → Bénéfice visible dès le 1er événement
+1. **Itération rapide** → MVP en 6 semaines > produit parfait jamais fini
+
+-----
+
+## 16. AVANTAGE COMPÉTITIF (Positionnement marché)
+
+**Problème résolu :**  
+Organiser entre amis est frustrant. WhatsApp est chaotique, Doodle est froid, Facebook Events est complexe.
+
+**Solution Event’s :**  
+L’équilibre parfait entre la chaleur d’une conversation WhatsApp et l’efficacité d’un outil de planification.
+
+**Différenciation :**
+
+- **vs WhatsApp :** Structure et clarté sans perdre la spontanéité
+- **vs Doodle :** Social et conversationnel, pas juste transactionnel
+- **vs Facebook Events :** Intimité du groupe d’amis, pas broadcast public
+
+-----
+
+## 17. MODIFICATIONS DE CE DOCUMENT
+
+Ce document ne peut être modifié que dans les cas suivants :
+
+1. **Pivot stratégique validé** après échec répété du MVP (taux conversion <30% sur 3 mois)
+1. **Contrainte technique imprévue** rendant l’architecture impossible
+1. **Changement légal majeur** affectant le modèle (ex: RGPD, lois paiement)
+1. **Validation utilisateur massive** d’une approche alternative (taux conversion >80%)
+
+Toute modification doit être documentée avec :
+
+- Date de modification
+- Raison du changement
+- Version précédente archivée
+- Validation par le product owner
+
+-----
+
+**Version 1.0 — Document Fondateur Event’s**  
+*Dernière mise à jour : 7 Décembre 2025*  
+*Statut : Actif et immuable sauf conditions Section 17*
+
+-----
+
+**Ce document est la source unique de vérité pour Event’s. Toute décision produit, technique ou design doit être alignée avec ces principes.**
