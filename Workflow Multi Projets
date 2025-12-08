@@ -1,0 +1,425 @@
+
+Version: 1.0.0
+Date: 2025-12-08
+Changelog:
+  - 1.0.0 (2025-12-08): Création du workflow multi projets Event's
+Breaking Changes: Aucun depuis 1.0.0
+---
+
+# Event's - Workflow Multi Projets
+
+## 1. Vue d'ensemble
+
+Objectif du système multi projets  
+- Garder une seule source de vérité produit et technique  
+- Éviter la dérive entre vision, specs, design et implémentation  
+- Rendre chaque "Project" spécialisé, mais coordonné par une logique claire
+
+Flux global simplifié
+
+Vous → Project Vision → Project Kode + Project UI → Project Replit → Replit Agent → Project QA → Merge / feedback
+
+- Project Vision reçoit toutes les demandes
+- Project Kode et Project UI produisent des réponses expertes alignées sur les documents référents
+- Project Replit traduit ces réponses en instructions exécutables pour Replit Agent, en tenant un Decision Log
+- Project QA vérifie la conformité finale avec la vision, l’architecture, le design et les critères d’acceptation
+
+---
+
+## 2. Hiérarchie des documents référents
+
+Les documents référents sont organisés par niveaux de stabilité.
+
+### 2.1 NIVEAU 1 - Immuable
+
+- `Identity.txt`  
+  - Vision, mission, positionnement, principes directeurs, métrique de succès absolue, pièges à éviter  
+  - Ce document définit ce que Event's est et ne sera pas, ainsi que la North Star Metric et les principes comme "Fast first, detailed later", "Jamais bloquer la conversation" et la définition stricte du MVP par phase  [oai_citation:0‡Identity.txt](file-service://file-HishEY97KrQ6PgQdn17MwG)  
+
+Règle  
+- Toute décision stratégique, technique ou UX doit rester compatible avec Identity  
+- Toute modification d’Identity est un pivot et déclenche un changement de version majeur sur l’ensemble du système
+
+### 2.2 NIVEAU 2 - Stable
+
+- `Architecture_&_Code.txt`  
+  - Stack, architecture Firestore, standards de code, conventions, CI/CD, sécurité, tests, performances  [oai_citation:1‡Architecture_&_Code.txt](file-service://file-7Mhw7tiaR2sqjsQ4zU831n)  
+- `Design_System_&_Charte_UX.txt`  
+  - Palette, composants, interaction patterns, animations, accessibilité, responsive, patterns graphiques et d’interaction  [oai_citation:2‡Design_System_&_Charte_UX.txt](file-service://file-MJXghStYooSRiCvov2cpxY)  
+
+Règle  
+- Modifications uniquement pour  
+  - Nouvelle feature majeure validée  
+  - Contrainte technique forte  
+  - Problème UX systémique détecté en usage réel  
+- Toute évolution doit rester compatible avec Identity (Niveau 1)
+
+### 2.3 NIVEAU 3 - Évolutif
+
+- `Overview.txt`  
+  - Parcours utilisateur, architecture des états d’événement, roadmap MVP, pièges à éviter, plan d’action court terme  [oai_citation:3‡Overview.txt](file-service://file-YZjkP1EsMb47f3CYs4t6ib)  
+
+Règle  
+- Peut être ajusté fréquemment en fonction de la réalité terrain, tant que N1 et N2 sont respectés  
+- Peut être splitté plus tard en sous-docs plus spécialisés si besoin
+
+### 2.4 Règle générique
+
+- Un document de niveau N ne peut être modifié que si le changement est compatible avec tous les documents de niveau N-1
+- Identity (N1) est la contrainte dure de l’ensemble du système
+
+---
+
+## 3. Rôles et responsabilités
+
+### 3.1 Project Vision
+
+Rôle  
+- Chef d’orchestre de Event's  
+- Point d’entrée de toutes les demandes  
+- Garant de la cohérence avec `Identity.txt` et de l’alignement global
+
+Responsabilités  
+- Analyser chaque demande  
+- Identifier type de demande (stratégique, technique, design, mixte)  
+- Vérifier l’alignement avec les documents référents  
+- Dispatcher vers les projets spécialisés avec des questions claires et format de réponse attendu  
+- Synthétiser les réponses et produire les instructions pour Project Replit  
+- Définir les critères de validation pour Project QA
+
+### 3.2 Project Kode
+
+Rôle  
+- Expert architecture et implémentation  
+- Garde-fou technique aligné sur `Architecture_&_Code.txt`  
+
+Responsabilités  
+- Proposer des solutions techniques compatibles avec la stack et les standards  
+- Identifier les impacts sur Firestore, Functions, CI/CD, performance, sécurité  
+- Traduire une demande fonctionnelle en contrats techniques clairs (types, endpoints, schémas, règles de sécurité, contraintes Replit)  
+- Valider ou challenger les demandes lorsque techniquement incohérentes ou coûteuses par rapport aux bénéfices
+
+### 3.3 Project UI
+
+Rôle  
+- Expert UX et UI  
+- Responsable de l’alignement avec `Design_System_&_Charte_UX.txt` et les principes d’interaction  
+
+Responsabilités  
+- Proposer les écrans, composants et patterns d’interaction adaptés à chaque demande  
+- Garder l’application simple, rapide et lisible, surtout sur mobile  
+- Refuser ou ajuster toute demande qui complexifie le parcours central Core Loop sans gain réel sur le KPI principal  
+- Produire des descriptions assez concrètes pour que Project Replit puisse dériver des composants React/Tailwind à partir du Design System
+
+### 3.4 Project Replit
+
+Rôle  
+- Traducteur vers Replit Agent  
+- Responsable de la qualité des instructions d’implémentation  
+- Gardien du `DECISIONS.md` (Decision Log)
+
+Responsabilités  
+- Prendre les sorties de Project Kode et Project UI et les transformer en instructions concrètes pour Replit Agent  
+- Vérifier la cohérence avec les documents référents via une checklist avant handoff  
+- Documenter tous les compromis techniques dans `DECISIONS.md`  
+- Informer Project QA des critères d’acceptation et des compromis
+
+### 3.5 Project QA
+
+Rôle  
+- Contrôle qualité et conformité  
+- Point de validation avant intégration de l’implémentation comme "canonique"
+
+Responsabilités  
+- Vérifier que le code généré par Replit Agent respecte  
+  - Identity (objectifs, principes, états canoniques)  
+  - Architecture & Code (structures, règles Firestore, stack, conventions)  
+  - Design System (composants, interactions, accessibilité)  
+  - Les critères d’acceptation définis par Project Vision  
+- Détecter les dérives et renvoyer un feedback structuré vers Project Replit et Vision  
+- Proposer la mise à jour des documents référents si la réalité technique impose un ajustement durable
+
+---
+
+## 4. Processus standard pour une demande
+
+### 4.1 Étape 0 - Réception
+
+Acteur: Project Vision  
+
+Pour chaque demande entrante, Project Vision doit  
+1. Résumer rapidement la demande en 2 à 3 phrases  
+2. Identifier le type  
+   - Stratégique (impacte la vision, la roadmap, le scope)  
+   - Technique (architecture, code, règles, performance)  
+   - Design/UX (parcours, composants, interaction)  
+   - Mixte (typiquement une nouvelle feature ou modification de core loop)  
+3. Identifier les sections de documents référents concernées  
+4. Vérifier les red flags  
+   - Contradiction avec Identity  
+   - Hors scope MVP actuel  
+   - Complexité disproportionnée vs valeur sur KPI principal
+
+### 4.2 Étape 1 - Dispatch vers projets spécialisés
+
+- Si demande surtout technique  
+  - Vision → Project Kode  
+- Si demande surtout UX / UI  
+  - Vision → Project UI  
+- Si demande mixte (cas le plus fréquent)  
+  - Vision → Project Kode et Project UI en parallèle, avec des questions spécifiques pour chacun
+
+Pour chaque projet consulté, Vision fournit  
+- Contexte  
+- Extrait ou section des documents référents  
+- Question exacte à traiter  
+- Format de réponse attendu  
+  - ex: "Liste de changements sur Firestore + liste de fonctions Cloud + impacts performance"  
+  - ex: "Proposition de screens et composants réutilisables, avec states et micro interactions clés"
+
+### 4.3 Étape 2 - Réponses expertes
+
+- Project Kode répond avec  
+  - Schémas de données précis  
+  - Interfaces Typescript si nécessaire  
+  - Impacts sur règles de sécurité, index, coûts  
+  - Propositions d’API ou de services si besoin  
+
+- Project UI répond avec  
+  - Description des écrans ou modules  
+  - Composants Design System utilisés  
+  - États, transitions, micro interactions  
+  - Points d’attention a11y et mobile first  
+
+Les deux projets peuvent lever des alertes si la demande casse un principe d’Identity ou la roadmap MVP.
+
+### 4.4 Étape 3 - Synthèse par Project Vision
+
+- Formalisation d’un bloc "Instructions pour [Feature X]" contenant  
+  - Contexte  
+  - Objectif mesurable  
+  - Références aux documents et sections concernées  
+  - Workflow recommandé (ordre des tâches)  
+  - Entrées attendues pour Project Replit  
+  - Critères de succès pour QA  
+
+Ce bloc est l’artefact de référence pour l’implémentation.
+
+### 4.5 Étape 4 - Handoff vers Project Replit
+
+- Project Replit reçoit  
+  - Le bloc "Instructions pour [Feature X]" de Project Vision  
+  - Les sorties détaillées de Project Kode et Project UI  
+
+Il applique ensuite une checklist Pre flight (voir section 6) et produit  
+- Un plan d’implémentation structuré pour Replit Agent  
+- Une mise à jour éventuelle du Decision Log
+
+### 4.6 Étape 5 - Exécution par Replit Agent
+
+- Replit Agent génère le code, les fichiers de config, les règles, etc.  
+- Le résultat est ensuite soumis à Project QA (ou vérifié par lui) avant d’être considéré comme aligné et stable.
+
+### 4.7 Étape 6 - Validation par Project QA
+
+- QA compare l’output au bloc d’instruction d’origine et aux documents référents  
+- Trois issues possibles  
+  1. Conforme  
+     - Marqué comme "Validé"  
+     - Peut déclencher mise à jour documentaire mineure (patch) si nécessaire  
+  2. Conforme mais avec compromis  
+     - Documenté dans Decision Log  
+     - Proposition de mise à jour des documents référents si le compromis devient la nouvelle norme  
+  3. Non conforme  
+     - Retour à Project Replit avec feedback précis et actionable  
+     - Si le problème vient de la demande initiale (contradiction avec Identity ou architecture), escalade vers Project Vision
+
+---
+
+## 5. Flux de validation détaillé
+
+```mermaid
+graph TD
+    A[Vous] -->|Question ou Feature| B[Project Vision]
+
+    B -->|Analyse + type| C{Type de demande ?}
+    C -->|Stratégique| B2[Vision + Identity]
+    C -->|Technique| D[Project Kode]
+    C -->|Design/UX| E[Project UI]
+    C -->|Mixte| F[Kode + UI en parallèle]
+
+    D --> G[Project Vision - Synthèse]
+    E --> G
+    F --> G
+
+    G --> H[Project Replit]
+    H -->|Plan + instructions| I[Replit Agent]
+    I -->|Code généré| J[Project QA]
+
+    J -->|Conforme| K[Merge + éventuellement mise à jour docs réf]
+    J -->|Non conforme| L[Feedback détaillé vers Replit]
+
+    L --> H
+
+    K --> M{Écart vs docs référents ?}
+    M -->|Non| N[Fin]
+    M -->|Oui| O[Mise à jour Overview/Arch/Design + Decision Log]
+
+
+⸻
+
+6. Decision Log (DECISIONS.md)
+
+6.1 Rôle
+	•	Historiser tous les compromis techniques significatifs
+	•	Documenter les écarts temporaires aux documents référents
+	•	Donner un contexte aux futurs ajustements d’architecture ou de design
+
+6.2 Format standard
+
+Chaque entrée doit contenir au minimum
+
+# Decision Log Event's
+
+## [AAAA-MM-JJ] : [Titre court et précis]
+Contexte :
+- [Pourquoi cette décision était nécessaire]
+- [Quels documents référents étaient concernés]
+
+Décision :
+- [Choix retenu]
+- [Alternatives envisagées, si utiles]
+
+Impact :
+- [Sur Arch & Code]
+- [Sur Design System]
+- [Sur la roadmap ou le MVP, si pertinent]
+
+Compatibilité :
+- Compatible avec Identity.txt : Oui / Non (si Non, c’est un vrai problème)
+- Niveau de risque : Faible / Moyen / Élevé
+
+Suivi :
+- Action future prévue : [ex. "revoir quand on aura X utilisateurs" ou "refacto prévu en Phase 2"]
+- Validé par : [Project Kode, Project UI, Project Vision, etc.]
+
+6.3 Règles d’utilisation
+	•	On ajoute une décision dès qu’un écart non trivial est introduit par rapport à Architecture ou Design
+	•	Pas besoin de log pour chaque détail d’implémentation local
+	•	Si une même “hack” revient dans plusieurs features, c’est un signal qu’il faut soit
+	•	mettre à jour Architecture_&_Code
+	•	soit faire un refacto global
+
+⸻
+
+7. Versioning sémantique et gouvernance
+
+Rappel des règles globales de versioning (cohérent avec les entêtes des documents référents)
+	•	Major (X.0.0) : pivot stratégique (modification d’Identity)
+	•	Minor (1.X.0) : ajout ou modification majeure de feature impactant Architecture ou Design
+	•	Patch (1.2.X) : adaptation technique, optimisation, correction, détail d’implémentation
+
+7.1 Quand incrémenter quoi
+	•	Identity.txt modifié
+	•	Tous les autres documents doivent être réévalués
+	•	Nouvelle version majeure sur Identity et, en pratique, une revue profonde du workflow
+	•	Architecture_&_Code ou Design_System modifiés côté “pattern canonique”
+	•	Incrément Minor
+	•	Project Vision doit vérifier l’impact sur Workflow et éventuellement le mettre à jour
+	•	Overview ajusté pour refléter l’apprentissage terrain sans changer les principes fondateurs
+	•	Patch ou Minor selon amplitude
+	•	Workflow.md et INSTRUCTIONS.md des projets
+	•	Minor si on change structure ou responsabilités
+	•	Patch si on clarifie ou affine sans changer le comportement attendu
+
+⸻
+
+8. Templates de travail
+
+Les templates suivants sont des références. Ils peuvent être stockés dans un dossier Templates/.
+
+8.1 feature_request.md (demande de feature)
+
+# Demande de Feature - [Nom]
+
+## Contexte
+[Contexte en 3 à 5 phrases]
+
+## Problème à résoudre
+[Problème concret, observable]
+
+## Objectif
+[Résultat mesurable, idéalement lié au KPI principal]
+
+## Utilisateurs concernés
+- [Type d’utilisateur, taille de groupes, cas d’usage]
+
+## Documents référents concernés
+- Identity.txt : [sections]
+- Architecture_&_Code.txt : [sections]
+- Design_System_&_Charte_UX.txt : [sections]
+- Overview.txt : [sections]
+
+## Contraintes
+- [Technique]
+- [UX]
+- [Business / scope MVP]
+
+## Priorité
+- Haute / Moyenne / Basse
+- Impact vs Effort (rapide estimation)
+
+8.2 decision_record.md (entrée de Decision Log)
+
+Voir format en section 6.2.
+
+8.3 validation_checklist.md (Project QA)
+
+# Validation Checklist - [Feature X]
+
+## Références
+- Instruction Vision : [lien ou résumé]
+- Commits / PR : [références]
+- Decision Log : [entrée(s) concernée(s)]
+
+## Conformité Identity
+- [ ] Respect du KPI principal (pas de feature bruit)
+- [ ] Respect des principes "Fast first, detailed later"
+- [ ] Chat jamais bloqué
+- [ ] Respect du scope MVP actuel
+
+## Conformité Architecture & Code
+- [ ] Structures Firestore conformes
+- [ ] Règles de sécurité alignées
+- [ ] Stack et patterns sans dérive
+- [ ] Tests de base présents (au moins unitaires sur logique sensible)
+
+## Conformité Design System
+- [ ] Palette et composants respectés
+- [ ] États et micro interactions conformes
+- [ ] Responsive correct, mobile prioritaire
+- [ ] Accessibilité minimale (focus, contrastes, taille clic)
+
+## Conformité Instructions Vision
+- [ ] Critères d’acceptation fonctionnelle remplis
+- [ ] Pas de regression visible sur le core loop
+- [ ] Pas de dérive non documentée dans Decision Log
+
+## Conclusion
+- Statut : Validé / Validé avec réserves / Refusé
+- Commentaires clés :
+- Actions à suivre :
+
+
+⸻
+
+9. Red flags transverses
+
+Les projets doivent lever une alerte immédiate si l’un des points suivants apparaît
+	•	Demande qui contredit explicitement Identity (positionnement produit, principes, segmentation cible)
+	•	Feature qui complexifie la Core Loop de Phase 1 alors que le MVP n’est pas encore validé
+	•	Gestion d’argent réel dans l’app en V1
+	•	Modifications N1 sans constat d’échec clair sur plusieurs cycles de tests réels
+	•	Ajout de fonctionnalités “cool” sans hypothèse claire sur l’impact sur le KPI principal
+
+Ce workflow est la colonne vertébrale de la coordination multi projets de Event’s. Toute nouvelle “Project persona” devra s’y intégrer.
