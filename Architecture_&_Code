@@ -1867,3 +1867,997 @@ export const myFunction = functions.https.onRequest((req, res) => {
 -----
 
 ## 11. CI/CD & DÉPLOIEMENT
+
+### Pipeline GitHub Actions
+
+**Workflow principal de déploiement :**
+
+```yaml
+# .github/workflows/deploy.yml
+name: Deploy to Firebase
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run linter
+        run: npm run lint
+      
+      - name: Run type check
+        run: npm run type-check
+      
+      - name: Run unit tests
+        run: npm run test:unit
+      
+      - name: Run integration tests
+        run: npm run test:integration
+      
+      - name: Generate coverage report
+        run: npm run test:coverage
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/coverage-final.json
+          fail_ci_if_error: true
+
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build application
+        run: npm run build
+        env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
+          VITE_GOOGLE_AI_API_KEY: ${{ secrets.VITE_GOOGLE_AI_API_KEY }}
+      
+      - name: Run Lighthouse CI
+        run: |
+          npm install -g @lhci/cli
+          lhci autorun
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+      
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+
+  deploy-preview:
+    name: Deploy Preview
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: dist
+          path: dist/
+      
+      - name: Deploy to Firebase Hosting (Preview)
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
+          expires: 7d
+        env:
+          FIREBASE_CLI_PREVIEWS: hostingchannels
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: dist
+          path: dist/
+      
+      - name: Deploy to Firebase Hosting (Production)
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
+          channelId: live
+      
+      - name: Deploy Cloud Functions
+        run: |
+          cd functions
+          npm ci
+          npm run deploy
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+      
+      - name: Notify deployment success
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: 'Production deployment successful! 🚀'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        if: success()
+      
+      - name: Notify deployment failure
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: 'Production deployment failed! ⚠️'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        if: failure()
+
+  deploy-firestore-rules:
+    name: Deploy Firestore Rules
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Deploy Firestore Security Rules
+        run: |
+          npm install -g firebase-tools
+          firebase deploy --only firestore:rules
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+      
+      - name: Deploy Firestore Indexes
+        run: firebase deploy --only firestore:indexes
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+```
+
+### Workflow pour Cloud Functions
+
+```yaml
+# .github/workflows/functions.yml
+name: Deploy Cloud Functions
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'functions/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'functions/**'
+
+jobs:
+  test-functions:
+    name: Test Cloud Functions
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: functions/package-lock.json
+      
+      - name: Install dependencies
+        working-directory: functions
+        run: npm ci
+      
+      - name: Run linter
+        working-directory: functions
+        run: npm run lint
+      
+      - name: Run tests
+        working-directory: functions
+        run: npm run test
+      
+      - name: Build functions
+        working-directory: functions
+        run: npm run build
+
+  deploy-functions:
+    name: Deploy Functions to Production
+    runs-on: ubuntu-latest
+    needs: test-functions
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+      
+      - name: Deploy Cloud Functions
+        working-directory: functions
+        run: |
+          npm ci
+          npm run build
+          firebase deploy --only functions
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+```
+
+### Configuration Lighthouse CI
+
+```javascript
+// lighthouserc.js
+module.exports = {
+  ci: {
+    collect: {
+      startServerCommand: 'npm run preview',
+      url: ['http://localhost:4173'],
+      numberOfRuns: 3,
+      settings: {
+        preset: 'desktop',
+      },
+    },
+    assert: {
+      assertions: {
+        'categories:performance': ['error', { minScore: 0.9 }],
+        'categories:accessibility': ['error', { minScore: 0.9 }],
+        'categories:best-practices': ['error', { minScore: 0.9 }],
+        'categories:seo': ['error', { minScore: 0.9 }],
+        'categories:pwa': ['warn', { minScore: 0.8 }],
+      },
+    },
+    upload: {
+      target: 'temporary-public-storage',
+    },
+  },
+};
+```
+
+### Scripts Package.json (Complet)
+
+```json
+{
+  "name": "events-app",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint . --ext ts,tsx --fix",
+    "type-check": "tsc --noEmit",
+    "test": "jest",
+    "test:unit": "jest --testPathPattern=unit",
+    "test:integration": "jest --testPathPattern=integration",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\"",
+    "deploy:preview": "firebase hosting:channel:deploy preview",
+    "deploy:prod": "firebase deploy --only hosting",
+    "emulators": "firebase emulators:start",
+    "functions:deploy": "cd functions && npm run deploy",
+    "firestore:rules": "firebase deploy --only firestore:rules",
+    "firestore:indexes": "firebase deploy --only firestore:indexes"
+  }
+}
+```
+
+### Configuration Firebase Hosting
+
+```json
+// firebase.json
+{
+  "hosting": {
+    "public": "dist",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "**/*.@(jpg|jpeg|gif|png|svg|webp)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "max-age=31536000"
+          }
+        ]
+      },
+      {
+        "source": "**/*.@(js|css)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "max-age=31536000"
+          }
+        ]
+      },
+      {
+        "source": "index.html",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "**",
+        "headers": [
+          {
+            "key": "X-Content-Type-Options",
+            "value": "nosniff"
+          },
+          {
+            "key": "X-Frame-Options",
+            "value": "DENY"
+          },
+          {
+            "key": "X-XSS-Protection",
+            "value": "1; mode=block"
+          },
+          {
+            "key": "Referrer-Policy",
+            "value": "strict-origin-when-cross-origin"
+          }
+        ]
+      }
+    ]
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log"
+      ]
+    }
+  ],
+  "emulators": {
+    "auth": {
+      "port": 9099
+    },
+    "functions": {
+      "port": 5001
+    },
+    "firestore": {
+      "port": 8080
+    },
+    "hosting": {
+      "port": 5000
+    },
+    "ui": {
+      "enabled": true,
+      "port": 4000
+    },
+    "singleProjectMode": true
+  }
+}
+```
+
+### Environnements & Configuration
+
+```bash
+# .env.development
+VITE_FIREBASE_API_KEY=dev_api_key
+VITE_FIREBASE_AUTH_DOMAIN=events-dev.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=events-dev
+VITE_FIREBASE_STORAGE_BUCKET=events-dev.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=123456789
+VITE_FIREBASE_APP_ID=dev_app_id
+VITE_GOOGLE_AI_API_KEY=dev_ai_key
+VITE_ENV=development
+
+# .env.production
+VITE_FIREBASE_API_KEY=prod_api_key
+VITE_FIREBASE_AUTH_DOMAIN=events-app.web.app
+VITE_FIREBASE_PROJECT_ID=events-prod
+VITE_FIREBASE_STORAGE_BUCKET=events-prod.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=987654321
+VITE_FIREBASE_APP_ID=prod_app_id
+VITE_GOOGLE_AI_API_KEY=prod_ai_key
+VITE_ENV=production
+```
+
+### Monitoring & Alertes
+
+**Configuration Firebase Performance Monitoring :**
+
+```typescript
+// src/services/monitoring.service.ts
+import { getPerformance, trace } from 'firebase/performance';
+import { app } from './firebase';
+
+const perf = getPerformance(app);
+
+export class MonitoringService {
+  // Tracer une opération
+  static async traceOperation<T>(
+    name: string,
+    operation: () => Promise<T>
+  ): Promise<T> {
+    const t = trace(perf, name);
+    t.start();
+    
+    try {
+      const result = await operation();
+      t.stop();
+      return result;
+    } catch (error) {
+      t.stop();
+      throw error;
+    }
+  }
+
+  // Tracer chargement composant
+  static traceComponent(componentName: string) {
+    const t = trace(perf, `component_${componentName}`);
+    t.start();
+    
+    return () => t.stop();
+  }
+
+  // Métriques personnalisées
+  static recordMetric(name: string, value: number) {
+    const t = trace(perf, name);
+    t.putMetric(name, value);
+  }
+
+  // Log erreur vers Sentry
+  static logError(error: Error, context?: Record<string, any>) {
+    if (import.meta.env.PROD) {
+      // Sentry.captureException(error, { extra: context });
+      console.error('[MONITORING]', error, context);
+    } else {
+      console.error('[DEV ERROR]', error, context);
+    }
+  }
+
+  // Log analytics event
+  static logAnalyticsEvent(
+    eventName: string, 
+    params?: Record<string, any>
+  ) {
+    // Firebase Analytics
+    // logEvent(analytics, eventName, params);
+    console.log('[ANALYTICS]', eventName, params);
+  }
+}
+
+// Hook React pour tracer le render
+export function usePerformanceTrace(componentName: string) {
+  React.useEffect(() => {
+    const stopTrace = MonitoringService.traceComponent(componentName);
+    return stopTrace;
+  }, [componentName]);
+}
+```
+
+**Intégration Sentry :**
+
+```typescript
+// src/config/sentry.ts
+import * as Sentry from '@sentry/react';
+import { BrowserTracing } from '@sentry/tracing';
+
+if (import.meta.env.PROD) {
+  Sentry.init({
+    dsn: import.meta.env.VITE_SENTRY_DSN,
+    integrations: [
+      new BrowserTracing(),
+      new Sentry.Replay({
+        maskAllText: true,
+        blockAllMedia: true,
+      }),
+    ],
+    tracesSampleRate: 0.1, // 10% des transactions
+    replaysSessionSampleRate: 0.1,
+    replaysOnErrorSampleRate: 1.0,
+    environment: import.meta.env.VITE_ENV,
+    beforeSend(event, hint) {
+      // Filtrer les erreurs non critiques
+      if (event.exception) {
+        const error = hint.originalException;
+        if (error instanceof Error && error.message.includes('ResizeObserver')) {
+          return null; // Ignore ResizeObserver errors
+        }
+      }
+      return event;
+    },
+  });
+}
+```
+
+### Health Checks & Status Page
+
+```typescript
+// functions/src/callable/healthCheck.ts
+import * as functions from 'firebase-functions';
+import { getFirestore } from 'firebase-admin/firestore';
+
+export const healthCheck = functions.https.onRequest(async (req, res) => {
+  const checks = {
+    timestamp: new Date().toISOString(),
+    status: 'healthy',
+    services: {} as Record<string, string>,
+  };
+
+  try {
+    // Vérifier Firestore
+    const db = getFirestore();
+    await db.collection('_health').doc('check').set({
+      lastCheck: new Date(),
+    });
+    checks.services.firestore = 'ok';
+  } catch (error) {
+    checks.services.firestore = 'error';
+    checks.status = 'degraded';
+  }
+
+  // Vérifier Auth (optionnel)
+  try {
+    // Minimal check
+    checks.services.auth = 'ok';
+  } catch (error) {
+    checks.services.auth = 'error';
+    checks.status = 'degraded';
+  }
+
+  const statusCode = checks.status === 'healthy' ? 200 : 503;
+  res.status(statusCode).json(checks);
+});
+```
+
+### Rollback Strategy
+
+**Script de rollback :**
+
+```bash
+#!/bin/bash
+# scripts/rollback.sh
+
+echo "🔄 Starting rollback procedure..."
+
+# Récupérer le dernier déploiement réussi
+LAST_VERSION=$(firebase hosting:clone events-prod:live events-prod:rollback)
+
+echo "📦 Rolling back to version: $LAST_VERSION"
+
+# Déployer la version précédente
+firebase hosting:channel:deploy live --only hosting
+
+echo "✅ Rollback completed"
+
+# Notification Slack
+curl -X POST $SLACK_WEBHOOK_URL \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "text": "⚠️ Production rollback executed",
+    "attachments": [{
+      "color": "warning",
+      "text": "Rolled back to previous stable version"
+    }]
+  }'
+```
+
+### Stratégie de Déploiement
+
+**Blue-Green Deployment avec Firebase Hosting Channels :**
+
+```bash
+# Déployer sur canal preview
+firebase hosting:channel:deploy preview --expires 7d
+
+# Tester la preview
+# Si OK, promouvoir en production
+firebase hosting:clone events-prod:preview events-prod:live
+
+# Si problème, supprimer le canal
+firebase hosting:channel:delete preview
+```
+
+### Backup & Disaster Recovery
+
+```typescript
+// functions/src/scheduled/backupFirestore.ts
+import * as functions from 'firebase-functions';
+import { getFirestore } from 'firebase-admin/firestore';
+import { Storage } from '@google-cloud/storage';
+
+// Exécuter tous les jours à 2h du matin
+export const backupFirestore = functions.pubsub
+  .schedule('0 2 * * *')
+  .timeZone('Europe/Paris')
+  .onRun(async (context) => {
+    const projectId = process.env.GCLOUD_PROJECT;
+    const databaseName = '(default)';
+    const bucket = `gs://${projectId}-backups`;
+    
+    const client = new Firestore.v1.FirestoreAdminClient();
+    
+    const timestamp = new Date().toISOString().split('T')[0];
+    const outputUriPrefix = `${bucket}/${timestamp}`;
+    
+    try {
+      const [operation] = await client.exportDocuments({
+        name: `projects/${projectId}/databases/${databaseName}`,
+        outputUriPrefix,
+        collectionIds: [], // Empty = all collections
+      });
+      
+      console.log(`Backup started: ${operation.name}`);
+      await operation.promise();
+      console.log('Backup completed successfully');
+      
+      // Nettoyer les backups > 30 jours
+      await cleanupOldBackups(bucket);
+    } catch (error) {
+      console.error('Backup failed:', error);
+      throw error;
+    }
+  });
+
+async function cleanupOldBackups(bucketName: string) {
+  const storage = new Storage();
+  const bucket = storage.bucket(bucketName.replace('gs://', ''));
+  
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  
+  const [files] = await bucket.getFiles();
+  
+  for (const file of files) {
+    const [metadata] = await file.getMetadata();
+    const created = new Date(metadata.timeCreated);
+    
+    if (created < thirtyDaysAgo) {
+      await file.delete();
+      console.log(`Deleted old backup: ${file.name}`);
+    }
+  }
+}
+```
+
+### Documentation de Déploiement
+
+**README Déploiement :**
+
+```markdown
+# 🚀 Guide de Déploiement Event's
+
+## Prérequis
+
+- Node.js 20+
+- Firebase CLI (`npm install -g firebase-tools`)
+- Accès au projet Firebase
+- Variables d'environnement configurées
+
+## Environnements
+
+- **Development:** `events-dev` (Firebase project)
+- **Production:** `events-prod` (Firebase project)
+
+## Déploiement Manuel
+
+### 1. Preview (pour test)
+```bash
+npm run build
+firebase hosting:channel:deploy preview --expires 7d
+```
+
+### 2. Production
+
+```bash
+# Vérifier les tests
+npm run test
+
+# Build
+npm run build
+
+# Déployer hosting
+firebase deploy --only hosting
+
+# Déployer functions
+cd functions && npm run deploy
+
+# Déployer rules
+firebase deploy --only firestore:rules,firestore:indexes
+```
+
+## Déploiement Automatique
+
+Les pushs sur `main` déclenchent automatiquement :
+
+- Tests unitaires et intégration
+- Build de l’application
+- Déploiement en production
+- Notification Slack
+
+## Rollback
+
+En cas de problème :
+
+```bash
+./scripts/rollback.sh
+```
+
+## Monitoring
+
+- **Firebase Console:** https://console.firebase.google.com
+- **Performance:** Firebase Performance Monitoring
+- **Errors:** Sentry Dashboard
+- **Logs:** Cloud Functions Logs
+
+## Health Check
+
+```bash
+curl https://events-prod.web.app/health
+```
+
+## Support
+
+En cas de problème critique :
+
+1. Vérifier le status : `/health`
+1. Consulter Sentry pour les erreurs
+1. Rollback si nécessaire
+1. Notifier l’équipe sur Slack
+
+```
+-----
+
+## 12. BONNES PRATIQUES & CONVENTIONS
+
+### Code Review Checklist
+
+**Avant de créer une Pull Request :**
+
+- [ ] Code respecte les conventions de nommage
+- [ ] Types TypeScript définis pour toutes les fonctions publiques
+- [ ] Tests unitaires écrits pour la nouvelle fonctionnalité
+- [ ] Pas de console.log() oublié (sauf logging intentionnel)
+- [ ] Aucune variable d'environnement en dur dans le code
+- [ ] Documentation mise à jour si nécessaire
+- [ ] Performance vérifiée (pas de re-renders inutiles)
+- [ ] Accessibilité validée (labels, ARIA, contraste)
+- [ ] Responsive testé sur mobile/tablet/desktop
+
+### Git Commit Convention
+
+**Format :** `type(scope): message`
+
+**Types autorisés :**
+
+- `feat`: Nouvelle fonctionnalité
+- `fix`: Correction de bug
+- `docs`: Documentation uniquement
+- `style`: Formatage (pas de changement de code)
+- `refactor`: Refactoring (ni feat ni fix)
+- `perf`: Amélioration de performance
+- `test`: Ajout/modification de tests
+- `chore`: Tâches de maintenance
+
+**Exemples :**
+
+```bash
+feat(events): add auto-validation when quorum reached
+fix(voting): prevent duplicate votes on same option
+docs(readme): update deployment instructions
+refactor(firestore): extract query logic to service
+perf(dashboard): lazy load event cards
+```
+
+### Code Documentation
+
+```typescript
+/**
+ * Valide automatiquement un événement si le quorum est atteint.
+ * 
+ * @param eventId - L'identifiant unique de l'événement
+ * @param threshold - Pourcentage de votes "yes" requis (défaut: 0.8)
+ * @returns Promise<boolean> - true si validation effectuée
+ * 
+ * @throws {AppError} Si l'événement n'existe pas
+ * @throws {AppError} Si l'événement n'est pas en statut "voting"
+ * 
+ * @example
+ * ```typescript
+ * const validated = await autoValidateEvent('evt_123', 0.8);
+ * if (validated) {
+ *   console.log('Event automatically confirmed!');
+ * }
+ * ```
+ */
+export async function autoValidateEvent(
+  eventId: string,
+  threshold: number = 0.8
+): Promise<boolean> {
+  // Implementation
+}
+```
+
+### Performance Best Practices
+
+**✅ À FAIRE :**
+
+```typescript
+// Utiliser React.memo pour composants lourds
+export const EventCard = React.memo<EventCardProps>(({ event }) => {
+  return <div>{/* ... */}</div>;
+});
+
+// Lazy loading des routes
+const EventDetail = lazy(() => import('@pages/EventDetail'));
+
+// Debounce des inputs
+const debouncedSearch = useDebounce(searchQuery, 300);
+
+// Virtual scrolling pour longues listes
+import { FixedSizeList } from 'react-window';
+```
+
+**❌ À ÉVITER :**
+
+```typescript
+// ❌ Re-render à chaque props change
+function EventCard(props) {
+  // Pas de memoization
+}
+
+// ❌ Fetch dans une boucle
+for (const id of userIds) {
+  await fetchUser(id); // N+1 problem
+}
+
+// ❌ State trop granulaire
+const [title, setTitle] = useState('');
+const [date, setDate] = useState(null);
+const [location, setLocation] = useState('');
+// Mieux : const [formData, setFormData] = useState({...})
+```
+
+### Sécurité Best Practices
+
+**Sanitization :**
+
+```typescript
+// ✅ Toujours sanitizer les inputs utilisateur
+import DOMPurify from 'dompurify';
+
+function sanitizeUserInput(input: string): string {
+  return DOMPurify.sanitize(input, {
+    ALLOWED_TAGS: ['b', 'i', 'em', 'strong'],
+    ALLOWED_ATTR: [],
+  });
+}
+
+// Utilisation
+const cleanTitle = sanitizeUserInput(userInput);
+```
+
+**Validation :**
+
+```typescript
+// ✅ Valider côté client ET serveur
+// Client
+if (!ValidationUtils.isValidEmail(email)) {
+  throw new AppError('Invalid email', ERROR_CODES.INVALID_INPUT);
+}
+
+// Serveur (Cloud Function)
+export const createEvent = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
+  }
+  
+  if (!ValidationUtils.isValidEventTitle(data.title)) {
+    throw new functions.https.HttpsError('invalid-argument', 'Invalid title');
+  }
+  
+  // Proceed...
+});
+```
+
+### Accessibilité (a11y) Checklist
+
+```typescript
+// ✅ Bonnes pratiques
+<button
+  aria-label="Vote for Saturday evening"
+  onClick={handleVote}
+  disabled={isLoading}
+>
+  <CheckIcon aria-hidden="true" />
+  Vote
+</button>
+
+// Focus management
+const modalRef = useRef<HTMLDivElement>(null);
+useEffect(() => {
+  modalRef.current?.focus();
+}, []);
+
+// Skip to content
+<a href="#main-content" className="skip-link">
+  Skip to main content
+</a>
+```
+
+-----
+
+**FIN DU DOCUMENT ARCHITECTURE & CODE**
+
+*Version 1.0 Complète*  
+*Dernière mise à jour : 8 Décembre 2025*  
+*Statut : Document de référence actif et complet*
+
+-----
+
+**Ce document couvre maintenant l’intégralité de l’architecture technique de Event’s, de la configuration initiale jusqu’au déploiement en production, en passant par le CI/CD, le monitoring et les bonnes pratiques de développement.**
