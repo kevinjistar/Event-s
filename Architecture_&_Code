@@ -1,6 +1,19 @@
+
+---
+Version: 1.0.0
+Date: 2025-12-08
+Changelog:
+  - 1.0.0 (2025-12-08): Initialisation du document
+Breaking Changes: Aucun depuis 1.0.0
+---
+Règle de versioning :
+	•	Major (X.0.0) : Pivot stratégique (Identity modifié)
+	•	Minor (1.X.0) : Nouvelle feature majeure (Architecture/Design modifié)
+	•	Patch (1.2.X) : Adaptation technique (ex: Replit-specific)
+---
 # Event’s — Architecture Technique & Standards de Code
 
-**Version 1.0 | Document de Référence Technique**  
+** Document de Référence Technique**  
 *Ce document définit l’architecture, les standards de développement et les bonnes pratiques immuables pour Event’s.*
 
 -----
