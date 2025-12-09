@@ -3462,7 +3462,1937 @@ useEffect(() => {
 **Ce document couvre maintenant l’intégralité de l’architecture technique de Event’s, de la configuration initiale jusqu’au déploiement en production, en passant par le CI/CD, le monitoring et les bonnes pratiques de développement.**
 `,
   "design_system": `
-[CONTENU DESIGN_SYSTEM_&_CHARTE_UX.TXT ICI]
+
+---
+Version: 1.0.0
+Date: 2025-12-08
+Changelog:
+  - 1.0.0 (2025-12-08): Initialisation du document
+Breaking Changes: Aucun depuis 1.0.0
+---
+Règle de versioning :
+	•	Major (X.0.0) : Pivot stratégique (Identity modifié)
+	•	Minor (1.X.0) : Nouvelle feature majeure (Architecture/Design modifié)
+	•	Patch (1.2.X) : Adaptation technique (ex: Replit-specific)
+---
+# Event’s — Design System & Charte UX
+
+**Version 1.0 | Document Fondateur Visuel**  
+*Ce document définit l’identité visuelle, les composants et les principes d’interaction immuables de Event’s.*
+
+-----
+
+## 1. PHILOSOPHIE VISUELLE & PRINCIPES DE DESIGN
+
+### Vision Visuelle
+
+**“Dynamic Warmth” — L’interface vivante qui invite à l’action.**
+
+Event’s n’est pas une application statique. Chaque élément respire, réagit et guide naturellement l’utilisateur vers l’action.
+
+### Les 4 Piliers Fondateurs
+
+#### 1. **Friendly Efficiency**
+
+- Interface chaleureuse et accueillante (formes rondes, couleurs vibrantes)
+- Densité d’information optimisée pour la décision rapide
+- Zéro friction entre intention et action
+
+#### 2. **Human-Centered**
+
+- Les avatars des amis sont omniprésents
+- L’humain est toujours au centre, jamais les données brutes
+- Les interactions sociales sont visibles et célèbres
+
+#### 3. **Feedback Instantané**
+
+- Chaque action déclenche une réaction visuelle immédiate
+- Les états changent en temps réel avec micro-animations
+- L’utilisateur n’attend jamais de confirmation
+
+#### 4. **Clarté Absolue**
+
+- Un utilisateur comprend l’état d’un événement en <1 seconde
+- Contraste fort : les actions importantes sautent aux yeux
+- Le reste est secondaire et s’efface visuellement
+
+### Règles UX Immuables
+
+**Thumb-Driven Design**  
+Toutes les actions clés (Vote, Navigation, CTA) sont accessibles dans la zone basse de l’écran (zone du pouce sur mobile).
+
+**Progressive Disclosure**  
+Les détails apparaissent progressivement. L’écran initial ne montre que l’essentiel.
+
+**Affordance Évidente**  
+Si c’est cliquable, ça doit ressembler à un bouton. Pas de liens cachés.
+
+-----
+
+## 2. PALETTE DE COULEURS
+
+### Couleurs Primaires (Brand Identity)
+
+|Couleur        |Hex      |Usage                                         |Symbolique                      |
+|---------------|---------|----------------------------------------------|--------------------------------|
+|**Coral Spark**|`#FF6B6B`|CTA principaux, logo, notifications urgentes  |Action, chaleur, énergie sociale|
+|**Deep Night** |`#2D3436`|Titres, textes importants, barre de navigation|Structure, stabilité, sérieux   |
+
+### Couleurs Fonctionnelles (États)
+
+|État           |Couleur      |Hex      |Usage                                                        |
+|---------------|-------------|---------|-------------------------------------------------------------|
+|**Succès**     |Success Green|`#00B894`|Vote “Je viens”, événement confirmé, indicateur disponibilité|
+|**Attente**    |Maybe Amber  |`#FDCB6E`|Vote “Si nécessaire”, état en validation                     |
+|**Refus**      |Error Red    |`#FF7675`|Vote “Pas dispo”, erreurs, annulation                        |
+|**Information**|Info Blue    |`#0984E3`|Liens, infos neutres, sélections actives                     |
+
+### Couleurs Neutres & Arrière-plans
+
+|Nom             |Hex      |Usage                                        |
+|----------------|---------|---------------------------------------------|
+|**Pure White**  |`#FFFFFF`|Cartes, surfaces élevées                     |
+|**Off-White**   |`#F7F9FC`|Fond général de l’app (contraste avec cartes)|
+|**Text Primary**|`#2D3436`|Titres, textes importants                    |
+|**Text Body**   |`#636E72`|Textes secondaires, descriptions             |
+|**Divider**     |`#DFE6E9`|Lignes de séparation subtiles                |
+|**Disabled**    |`#B2BEC3`|Éléments inactifs                            |
+
+### Dégradés (pour dynamisme)
+
+**Sunrise Gradient** (CTA premium)
+
+```css
+background: linear-gradient(135deg, #FF6B6B 0%, #FFA07A 100%);
+```
+
+**Night Gradient** (headers, sections premium)
+
+```css
+background: linear-gradient(180deg, #2D3436 0%, #1E272E 100%);
+```
+
+-----
+
+## 3. TYPOGRAPHIE
+
+### Police Système
+
+**Primary : Inter** (Google Fonts) — Sans-serif moderne, géométrique, optimisée pour la lisibilité.
+
+**Fallback natif :**
+
+- iOS : SF Pro
+- Android : Roboto
+
+### Échelle Typographique (Mobile First)
+
+|Type         |Taille|Poids          |Couleur         |Usage                                          |
+|-------------|------|---------------|----------------|-----------------------------------------------|
+|**H1**       |28px  |Bold (700)     |Deep Night      |Titres d’écran principaux                      |
+|**H2**       |20px  |Semi-Bold (600)|Deep Night      |Titres de section                              |
+|**H3**       |16px  |Semi-Bold (600)|Deep Night      |Titres de carte, événements                    |
+|**Body**     |16px  |Regular (400)  |Text Body       |Texte courant (line-height: 1.5)               |
+|**Body Bold**|16px  |Semi-Bold (600)|Deep Night      |Emphase dans le texte                          |
+|**Caption**  |12px  |Medium (500)   |Text Body       |Métadonnées (date, heure, nombre de votes)     |
+|**Button**   |16px  |Bold (700)     |Blanc/Deep Night|Textes de boutons                              |
+|**Overline** |10px  |Bold (700)     |Text Body       |Labels, badges (uppercase, letter-spacing: 1px)|
+
+### Règles Typographiques
+
+- **Line Height :** 1.5 pour Body, 1.2 pour Titres
+- **Letter Spacing :**
+  - Normal (0) pour Body
+  - +0.5px pour Buttons
+  - +1px pour Overline (uppercase)
+- **Max Width :** 680px pour le texte long (lisibilité)
+
+-----
+
+## 4. ICONOGRAPHIE & FORMES
+
+### Formes & Bordures
+
+**Corner Radius (Arrondis)**
+
+- Cartes : `16px`
+- Inputs : `12px`
+- Boutons primaires : `12px`
+- Boutons circulaires : `50%` (cercle complet)
+- Avatars : `50%` (cercle complet)
+
+**Style : “Soft Bubble”**  
+Tout doit sembler tactile, doux, accueillant. Aucun angle vif sauf nécessité fonctionnelle.
+
+### Ombres (Depth)
+
+```css
+/* Élévation légère (cartes) */
+shadow-light: 0px 2px 8px rgba(0, 0, 0, 0.05);
+
+/* Élévation moyenne (boutons, modales) */
+shadow-medium: 0px 4px 12px rgba(0, 0, 0, 0.1);
+
+/* Élévation forte (FAB, menus contextuels) */
+shadow-strong: 0px 8px 24px rgba(0, 0, 0, 0.15);
+
+/* Glow pour CTA (effet néon subtil) */
+shadow-glow: 0px 4px 16px rgba(255, 107, 107, 0.3);
+```
+
+### Iconographie
+
+**Style : Rounded, trait 2px**  
+Source recommandée : Lucide Icons ou Heroicons (Rounded variant)
+
+**États :**
+
+- **Inactif :** Outline (contour) — Couleur `#B2BEC3`
+- **Actif :** Filled (plein) — Couleur `#FF6B6B` ou `#2D3436`
+
+**Icônes Clés :**
+
+|Fonction    |Icône        |Usage                       |
+|------------|-------------|----------------------------|
+|Dashboard   |🏠 Home       |Écran d’accueil, hub central|
+|Groupes     |👥 Users      |Liste des groupes           |
+|Événements  |🎉 Calendar   |Vue calendrier/événements   |
+|Profil      |👤 User       |Profil utilisateur          |
+|Recherche   |🔍 Search     |Rechercher amis/groupes     |
+|Ajouter     |➕ Plus       |Créer événement/groupe      |
+|Vote        |✅ Check      |Voter “Je viens”            |
+|Peut-être   |🤔 Help Circle|Vote “Si nécessaire”        |
+|Indisponible|❌ X          |Vote “Pas dispo”            |
+
+-----
+
+## 5. COMPOSANTS UI (Design System)
+
+### A. Boutons
+
+#### **Primary Button** (Action principale)
+
+```css
+background: #FF6B6B;
+color: #FFFFFF;
+padding: 16px 24px;
+border-radius: 12px;
+box-shadow: 0px 4px 16px rgba(255, 107, 107, 0.3);
+font-weight: 700;
+transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+/* Hover/Active */
+transform: translateY(-2px);
+box-shadow: 0px 6px 20px rgba(255, 107, 107, 0.4);
+```
+
+**Usage :** “Créer événement”, “Confirmer”, “Voter”
+
+#### **Secondary Button** (Action secondaire)
+
+```css
+background: transparent;
+border: 2px solid #2D3436;
+color: #2D3436;
+padding: 14px 22px;
+border-radius: 12px;
+font-weight: 700;
+transition: all 0.2s ease;
+
+/* Hover */
+background: #2D3436;
+color: #FFFFFF;
+```
+
+**Usage :** “Annuler”, “Retour”, “Voir détails”
+
+#### **Ghost Button** (Action tertiaire)
+
+```css
+background: transparent;
+border: none;
+color: #636E72;
+padding: 12px 16px;
+font-weight: 600;
+transition: color 0.2s ease;
+
+/* Hover */
+color: #2D3436;
+```
+
+**Usage :** “Passer”, “Plus tard”, “Ignorer”
+
+#### **Floating Action Button (FAB)**
+
+```css
+width: 56px;
+height: 56px;
+border-radius: 50%;
+background: linear-gradient(135deg, #FF6B6B 0%, #FFA07A 100%);
+box-shadow: 0px 8px 24px rgba(255, 107, 107, 0.4);
+position: fixed;
+bottom: 80px; /* Au-dessus de la nav bar */
+right: 20px;
+z-index: 100;
+
+/* Animation pulse subtile */
+animation: pulse 2s infinite;
+```
+
+**Usage :** Créer un événement (bouton “+” omniprésent)
+
+### B. Cartes (Cards)
+
+#### **Event Card** (Carte d’événement standard)
+
+**Structure visuelle :**
+
+```
+┌───────────────────────────────────────┐
+│ [Date Bloc] Titre de l'événement      │
+│  JUIN       3 propositions · 4 votes  │
+│   12        [Avatars overlap] →       │
+│             [Badge: En vote 🟠]       │
+└───────────────────────────────────────┘
+```
+
+**Specs CSS :**
+
+```css
+background: #FFFFFF;
+padding: 16px;
+border-radius: 16px;
+box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05);
+transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+/* Hover/Press */
+transform: translateY(-4px);
+box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1);
+```
+
+**Éléments :**
+
+- **Date Bloc :** 50×50px, fond `#F7F9FC`, radius `12px`, mois (caption) + jour (H2)
+- **Titre :** H3, Deep Night
+- **Métadonnées :** Caption, Text Body ou Coral Spark si urgent
+- **Avatars :** 32px, overlap `-8px`, max 3 visibles puis “+X”
+- **Badge État :** Pill shape, fond coloré selon état (voir section États)
+
+### C. Module de Vote (Heatmap UI) — ★ Composant Signature
+
+**Contexte :** Le cœur de Event’s. Où les utilisateurs votent pour les créneaux.
+
+**Layout :**
+
+```
+┌──────────────────────────────────────────┐
+│ 📅 Choisis tes disponibilités            │
+├──────────────────────────────────────────┤
+│ [Créneau 1] [Créneau 2] [Créneau 3]     │
+│ Sam 12 juin  Dim 13 juin  Lun 14 juin   │
+│   19h-22h      14h-17h      20h-23h      │
+│ ┌─────────┐ ┌─────────┐ ┌─────────┐     │
+│ │ 6/8 ✅  │ │ 3/8 🤔  │ │ 2/8 ❌  │     │
+│ └─────────┘ └─────────┘ └─────────┘     │
+│ [Barre heat: ████████░░] [████░░░░] ... │
+└──────────────────────────────────────────┘
+```
+
+**Cellule de Vote (Slot) :**
+
+```css
+/* État Non voté */
+background: #F7F9FC;
+border: 2px solid #DFE6E9;
+color: #2D3436;
+
+/* État Je viens (voted "yes") */
+background: #00B894;
+border: 2px solid #00B894;
+color: #FFFFFF;
+transform: scale(1.05);
+
+/* État Peut-être (voted "maybe") */
+background: #FFF9E6;
+border: 2px solid #FDCB6E;
+color: #2D3436;
+
+/* État Pas dispo (voted "no") */
+background: #FFE6E6;
+border: 2px solid #FF7675;
+color: #636E72;
+opacity: 0.7;
+```
+
+**Barre Heatmap (sous chaque créneau) :**
+
+```css
+height: 4px;
+width: 100%;
+background: #DFE6E9;
+border-radius: 2px;
+overflow: hidden;
+
+/* Remplissage progressif */
+.fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00B894 0%, #FDCB6E 100%);
+  width: ${percentage}%; /* Calculé dynamiquement */
+  transition: width 0.4s ease;
+}
+```
+
+**Interaction :**
+
+1. Tap sur un créneau → Animation bounce + vibration haptique légère
+1. Changement instantané de couleur
+1. Mise à jour en temps réel du compteur (ex: “6/8 ✅”)
+1. Animation de la barre heatmap
+
+### D. Avatars
+
+**Règles :**
+
+- Toujours circulaires (`border-radius: 50%`)
+- Bordure blanche de `2px` pour détachement sur fond coloré
+- Si pas de photo : Initiale centrée sur fond pastel généré par hash du nom
+
+**Tailles :**
+
+|Contexte  |Taille|Usage                               |
+|----------|------|------------------------------------|
+|**Tiny**  |24px  |Indicateurs multiples, listes denses|
+|**Small** |32px  |Cartes d’événement, participants    |
+|**Medium**|40px  |Listes de groupes, membres          |
+|**Large** |80px  |Profil utilisateur, headers         |
+|**XLarge**|120px |Écran de profil principal           |
+
+**Overlap Effect (groupe d’avatars) :**
+
+```css
+.avatar-group {
+  display: flex;
+  margin-left: -8px; /* Overlap */
+}
+
+.avatar-group .avatar:not(:first-child) {
+  margin-left: -12px;
+  border: 2px solid #FFFFFF; /* Pour détacher */
+}
+
+.avatar-group .avatar-more {
+  background: #2D3436;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 700;
+}
+```
+
+### E. Badges & Pills
+
+**Badge d’État (Event Status) :**
+
+```css
+display: inline-flex;
+align-items: center;
+gap: 4px;
+padding: 4px 12px;
+border-radius: 12px;
+font-size: 12px;
+font-weight: 600;
+text-transform: uppercase;
+letter-spacing: 0.5px;
+```
+
+**Variations par état :**
+
+|État         |Emoji|Couleur Fond|Couleur Texte|
+|-------------|-----|------------|-------------|
+|Idée         |💡    |`#FFF9E6`   |`#F39C12`    |
+|Vote en cours|📅    |`#FFE6E6`   |`#FF6B6B`    |
+|En validation|⏳    |`#F0E6FF`   |`#9B59B6`    |
+|Confirmé     |✅    |`#E6FFF0`   |`#00B894`    |
+|Passé        |📸    |`#F7F9FC`   |`#636E72`    |
+|Annulé       |❌    |`#DFE6E9`   |`#636E72`    |
+
+-----
+
+## 6. ANIMATIONS & MICRO-INTERACTIONS
+
+### Principes d’Animation
+
+**Timing :** Rapide mais pas brusque
+
+- Transitions courtes : `0.2s` (hover, clicks)
+- Transitions moyennes : `0.3s` (navigation, états)
+- Transitions longues : `0.5s` (entrées/sorties d’écran)
+
+**Easing :**
+
+```css
+/* Standard (par défaut) */
+cubic-bezier(0.4, 0, 0.2, 1)
+
+/* Entrée rapide, sortie lente */
+cubic-bezier(0, 0, 0.2, 1)
+
+/* Bounce subtil */
+cubic-bezier(0.68, -0.55, 0.265, 1.55)
+```
+
+### Micro-interactions Clés
+
+#### **Vote Button Click**
+
+```css
+@keyframes voteClick {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.95); }
+  100% { transform: scale(1.05); }
+}
+
+.vote-button:active {
+  animation: voteClick 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+```
+
+#### **Card Hover (Desktop)**
+
+```css
+.event-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.event-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.12);
+}
+```
+
+#### **Confirmation Success**
+
+```css
+@keyframes successPulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Ajouter confetti ou checkmark animé */
+```
+
+#### **Loading States**
+
+```css
+/* Skeleton loader */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #F7F9FC 0%,
+    #E0E6EB 50%,
+    #F7F9FC 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+```
+
+### Effets Dynamiques (CSS Avancé)
+
+#### **Parallax Scroll (Headers)**
+
+```css
+.parallax-header {
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  transform: translateZ(0); /* Hardware acceleration */
+}
+
+/* JavaScript requis pour parallax fluide */
+element.style.transform = `translateY(${scrollY * 0.5}px)`;
+```
+
+#### **Gradient Animation (CTA Premium)**
+
+```css
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animated-gradient {
+  background: linear-gradient(
+    270deg,
+    #FF6B6B,
+    #FFA07A,
+    #FF6B6B
+  );
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+```
+
+#### **Glass Morphism (Modales, Overlays)**
+
+```css
+.glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+```
+
+-----
+
+## 7. ESPACEMENTS & GRILLE
+
+### Système de Grille 8pt
+
+**Base : 8px**  
+Toutes les marges, paddings et dimensions sont des multiples de 8.
+
+|Nom  |Valeur|Usage                                   |
+|-----|------|----------------------------------------|
+|`xs` |4px   |Espacements très serrés (icônes, badges)|
+|`sm` |8px   |Éléments liés (label + input)           |
+|`md` |16px  |Standard (padding cartes, gaps)         |
+|`lg` |24px  |Séparation de sections                  |
+|`xl` |32px  |Séparation majeure (entre modules)      |
+|`2xl`|48px  |Marges d’écran, sections importantes    |
+
+### Marges d’Écran
+
+```css
+/* Mobile */
+padding-x: 16px;
+padding-y: 20px;
+
+/* Tablet (>768px) */
+padding-x: 24px;
+
+/* Desktop (>1024px) */
+padding-x: 32px;
+max-width: 1200px;
+margin: 0 auto;
+```
+
+### Gaps entre Éléments
+
+```css
+/* Liste serrée (avatars, tags) */
+gap: 8px;
+
+/* Liste standard (cartes) */
+gap: 16px;
+
+/* Sections */
+gap: 24px;
+```
+
+-----
+
+## 8. RESPONSIVE DESIGN
+
+### Breakpoints
+
+|Device     |Min Width|Max Width|Layout                                     |
+|-----------|---------|---------|-------------------------------------------|
+|**Mobile** |—        |767px    |1 colonne, navigation bottom bar           |
+|**Tablet** |768px    |1023px   |2 colonnes, navigation side bar optionnelle|
+|**Desktop**|1024px   |—        |3 colonnes, navigation side bar fixe       |
+
+### Règles Responsive
+
+**Mobile First**  
+Tous les styles de base sont pour mobile. On ajoute progressivement pour écrans plus grands.
+
+```css
+/* Base (Mobile) */
+.grid {
+  grid-template-columns: 1fr;
+}
+
+/* Tablet */
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+```
+
+-----
+
+## 9. NAVIGATION & STRUCTURE D’ÉCRAN
+
+### Bottom Navigation Bar (Mobile)
+
+**Position :** Fixe en bas, toujours visible  
+**Height :** 64px + safe-area-inset-bottom  
+**Items :** 4 max (Dashboard, Groupes, Événements, Profil)
+
+```css
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: #FFFFFF;
+  box-shadow: 0px -2px 10px rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 1000;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: #B2BEC3;
+  transition: color 0.2s ease;
+}
+
+.nav-item.active {
+  color: #FF6B6B;
+}
+
+.nav-item.active .icon {
+  transform: scale(1.1);
+}
+```
+
+### Side Navigation (Desktop)
+
+**Width :** 240px fixe  
+**Position :** Fixed left  
+**Contenu :** Logo, Navigation principale, Groupes favoris, Profil
+
+-----
+
+## 10. ÉTATS INTERACTIFS
+
+### Hiérarchie Visuelle des États
+
+|État              |Traitement visuel                           |
+|------------------|--------------------------------------------|
+|**Default**       |Opacité 100%, couleur normale               |
+|**Hover**         |Transform translateY(-2px), shadow augmentée|
+|**Active/Pressed**|Transform scale(0.98), shadow réduite       |
+|**Focus**         |Outline 2px Coral Spark, offset 2px         |
+|**Disabled**      |Opacité 50%, cursor: not-allowed, grayscale |
+|**Loading**       |Skeleton animation ou spinner               |
+
+### Focus States (Accessibilité)
+
+```css
+*:focus-visible {
+  outline: 2px solid #FF6B6B;
+  outline-offset: 2px;
+  border-radius: inherit;
+}
+
+button:focus-visible {
+  box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.2);
+}
+```
+
+-----
+
+## 11. ACCESSIBILITÉ (a11y)
+
+### Principes Obligatoires
+
+**Contraste Minimum**
+
+- Texte normal : 4.5:1 minimum
+- Texte large (>18px) : 3:1 minimum
+- Éléments interactifs : 3:1 minimum
+
+**Navigation Clavier**
+
+- Tous les éléments interactifs doivent être accessibles au Tab
+- Ordre logique de tabulation
+- Focus visible sur tous les éléments
+
+**ARIA Labels**
+
+```html
+<!-- Bouton sans texte -->
+<button aria-label="Créer un événement">
+  <PlusIcon />
+</button>
+
+<!-- État dynamique -->
+<div role="status" aria-live="polite">
+  6 personnes ont voté
+</div>
+```
+
+### Tailles Tactiles Minimales
+
+```css
+/* Zones de touch minimum 44×44px (iOS) */
+.touchable {
+  min-width: 44px;
+  min-height: 44px;
+}
+```
+
+-----
+
+## 12. DARK MODE (Phase 2+)
+
+### Palette Dark Mode
+
+|Élément         |Light    |Dark     |
+|----------------|---------|---------|
+|Background      |`#F7F9FC`|`#1A1D21`|
+|Surface (cartes)|`#FFFFFF`|`#25292E`|
+|Text Primary    |`#2D3436`|`#E8EAED`|
+|Text Secondary  |`#636E72`|`#9AA0A6`|
+|Divider         |`#DFE6E9`|`#3C4043`|
+
+**Règle :** En Dark Mode, les couleurs brand (Coral Spark) restent identiques pour cohérence.
+
+```css
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1A1D21;
+    --surface: #25292E;
+    --text-primary: #E8EAED;
+    --text-secondary: #9AA0A6;
+  }
+}
+```
+
+-----
+
+## 13. PERFORMANCE & OPTIMISATION
+
+### Images & Assets
+
+**Format :** WebP avec fallback JPG/PNG  
+**Lazy Loading :** Toutes images below-the-fold  
+**Avatars :** Compression aggressive, taille max 200×200px
+
+### CSS
+
+**Critical CSS :** Inline dans `<head>` pour first paint  
+**CSS Modules :** Pour éviter conflits de noms  
+**Purge CSS :** Enlever classes inutilisées en production
+
+### Animations
+
+**GPU Acceleration :**
+
+```css
+.animated-element {
+  will-change: transform;
+  transform: translateZ(0);
+}
+```
+
+**Reduce Motion :**
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+```
+
+-----
+
+## 14. EXEMPLES D’ÉCRANS (Wireframes Visuels)
+
+### Dashboard (Mobile)
+
+```
+┌─────────────────────────────────────┐
+│ [Logo] Event's         [Avatar] →   │ Header sticky
+├─────────────────────────────────────┤
+│ ⚡ Actions urgentes                  │
+│ ┌─────────────────────────────────┐ │
+│ │ [!] Vote pour "Anniv Thomas"    │ │ Card urgente (red accent)
+│ │     3 votes manquants           │ │
+│ │     [Voter maintenant →]        │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ 📅 Prochains événements             │
+│ ┌─────────────────────────────────┐ │
+│ │ JUIN  Barbecue chez Marc       │ │
+│ │  18   Confirmé · Sam 19h       │ │
+│ │       [👤👤👤 +3] →             │ │
+│ └─────────────────────────────────┘ │
+│ ┌─────────────────────────────────┐ │
+│ │ JUIL  Week-end Normandie       │ │
+│ │  02   En validation · 6/8 OK   │ │
+│ │       [👤👤👤 +3] →             │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ 💡 Suggestions                      │
+│ "☀️ Il fait beau samedi..."         │
+└─────────────────────────────────────┘
+│ [🏠] [👥] [📅] [👤]                 │ Bottom Nav
+└─────────────────────────────────────┘
+                                      [+] FAB
+```
+
+### Module de Vote (Expanded)
+
+```
+### Module de Vote (Expanded)
+
+```
+┌─────────────────────────────────────┐
+│ ← Anniversaire Thomas 🎂            │ Header
+├─────────────────────────────────────┤
+│ 📅 Choisis tes disponibilités       │
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ Samedi 12 juin                  │ │
+│ │ 19h - 22h                       │ │
+│ │ ┌───────────────────────────┐   │ │
+│ │ │ 6/8 ✅                     │   │ │ État: Je viens (vert)
+│ │ └───────────────────────────┘   │ │
+│ │ ████████████░░░░░░ 75%          │ │ Barre heatmap
+│ └─────────────────────────────────┘ │
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ Dimanche 13 juin                │ │
+│ │ 14h - 17h                       │ │
+│ │ ┌───────────────────────────┐   │ │
+│ │ │ 3/8 🤔                     │   │ │ État: Si nécessaire (jaune)
+│ │ └───────────────────────────┘   │ │
+│ │ ████░░░░░░░░░░░░ 37%            │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ Lundi 14 juin                   │ │
+│ │ 20h - 23h                       │ │
+│ │ ┌───────────────────────────┐   │ │
+│ │ │ 2/8 ❌                     │   │ │ État: Pas dispo (rouge clair)
+│ │ └───────────────────────────┘   │ │
+│ │ ██░░░░░░░░░░░░░░ 25%            │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ [+ Proposer un autre créneau]      │ Ghost button
+│                                     │
+├─────────────────────────────────────┤
+│ 💬 Discussion (3 nouveaux)          │ Section chat épinglée
+│ "Marc: Je ramène le gâteau 🎂"     │
+│ [Voir la discussion →]             │
+└─────────────────────────────────────┘
+│ [Valider mes choix]                │ CTA sticky bottom
+└─────────────────────────────────────┘
+```
+
+### Event Card (Détail Complet)
+
+```
+┌─────────────────────────────────────┐
+│ ┌────┐ Anniversaire Thomas 🎂      │
+│ │JUIN│ [Badge: En vote 🟠]         │
+│ │ 12 │                             │
+│ └────┘ Chez Marc • 20h             │
+│                                     │
+│ 📊 Votes: 6/8 participants          │
+│ ┌─────────────────────────────────┐ │
+│ │ ████████████░░░░░░ 75%          │ │ Progress bar
+│ └─────────────────────────────────┘ │
+│                                     │
+│ 👥 Participants confirmés           │
+│ [👤][👤][👤][👤][👤][👤] +2        │ Avatars overlap
+│                                     │
+│ ⏰ Il reste 2 jours pour voter      │ Urgence indicator
+│                                     │
+│ ┌──────────────┐ ┌──────────────┐  │
+│ │ Voter        │ │ Discussion   │  │ Action buttons
+│ └──────────────┘ └──────────────┘  │
+└─────────────────────────────────────┘
+```
+
+-----
+
+## 15. COMPOSANTS SPÉCIAUX
+
+### A. Timeline de Groupe (Vue Calendrier)
+
+```css
+.calendar-timeline {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  gap: 0;
+}
+
+.timeline-hour {
+  font-size: 12px;
+  color: #636E72;
+  text-align: right;
+  padding-right: 8px;
+  border-right: 2px solid #DFE6E9;
+}
+
+.timeline-events {
+  position: relative;
+  min-height: 60px;
+}
+
+.timeline-event {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  background: linear-gradient(135deg, #FF6B6B 0%, #FFA07A 100%);
+  border-radius: 8px;
+  padding: 8px;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0px 2px 8px rgba(255, 107, 107, 0.3);
+  /* Position calculée dynamiquement selon heure */
+  top: ${startMinute}px;
+  height: ${duration}px;
+}
+```
+
+### B. Notification Toast
+
+```css
+.toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #2D3436;
+  color: #FFFFFF;
+  padding: 12px 20px;
+  border-radius: 12px;
+  box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 9999;
+  
+  /* Animation entrée */
+  animation: toast-in 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes toast-in {
+  0% {
+    transform: translateX(-50%) translateY(-100px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Variants */
+.toast.success { background: #00B894; }
+.toast.error { background: #FF7675; }
+.toast.warning { background: #FDCB6E; color: #2D3436; }
+```
+
+### C. Modal / Bottom Sheet (Mobile)
+
+```css
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  animation: fade-in 0.2s ease;
+}
+
+.bottom-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #FFFFFF;
+  border-radius: 24px 24px 0 0;
+  padding: 20px;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0px -4px 24px rgba(0, 0, 0, 0.15);
+  animation: slide-up 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bottom-sheet::before {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 4px;
+  background: #DFE6E9;
+  border-radius: 2px;
+  margin: 0 auto 16px;
+}
+
+@keyframes slide-up {
+  0% { transform: translateY(100%); }
+  100% { transform: translateY(0); }
+}
+```
+
+### D. Empty State (État vide)
+
+```css
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.empty-state-icon {
+  width: 120px;
+  height: 120px;
+  margin-bottom: 24px;
+  opacity: 0.6;
+  /* Illustration SVG ou Lottie animation */
+}
+
+.empty-state-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2D3436;
+  margin-bottom: 8px;
+}
+
+.empty-state-description {
+  font-size: 16px;
+  color: #636E72;
+  margin-bottom: 24px;
+  max-width: 280px;
+}
+```
+
+### E. Search Bar
+
+```css
+.search-bar {
+  position: relative;
+  width: 100%;
+}
+
+.search-input {
+  width: 100%;
+  height: 48px;
+  padding: 12px 16px 12px 48px;
+  border: 2px solid #DFE6E9;
+  border-radius: 12px;
+  font-size: 16px;
+  background: #F7F9FC;
+  transition: all 0.2s ease;
+}
+
+.search-input:focus {
+  background: #FFFFFF;
+  border-color: #FF6B6B;
+  box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.1);
+}
+
+.search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #636E72;
+  pointer-events: none;
+}
+
+.search-clear {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: #636E72;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.search-input:not(:placeholder-shown) ~ .search-clear {
+  opacity: 1;
+}
+```
+
+-----
+
+## 16. PATTERNS D’INTERACTION AVANCÉS
+
+### A. Pull-to-Refresh
+
+```css
+.pull-refresh-indicator {
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 40px;
+  transition: transform 0.2s ease;
+}
+
+/* JavaScript contrôle la rotation et translation */
+.pull-refresh-indicator.active {
+  transform: translateX(-50%) translateY(80px) rotate(360deg);
+}
+```
+
+### B. Swipe Actions (Liste)
+
+```css
+.swipeable-item {
+  position: relative;
+  overflow: hidden;
+}
+
+.swipe-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.swipe-actions.revealed {
+  transform: translateX(0);
+}
+
+.swipe-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
+  color: white;
+  font-weight: 600;
+}
+
+.swipe-action.delete {
+  background: #FF7675;
+}
+
+.swipe-action.edit {
+  background: #0984E3;
+}
+```
+
+### C. Drag & Drop (Réordonnancement)
+
+```css
+.draggable-item {
+  cursor: grab;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.draggable-item:active {
+  cursor: grabbing;
+}
+
+.draggable-item.dragging {
+  opacity: 0.5;
+  transform: scale(1.05) rotate(2deg);
+  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+}
+
+.drop-zone {
+  border: 2px dashed #FF6B6B;
+  background: rgba(255, 107, 107, 0.05);
+  border-radius: 12px;
+  min-height: 60px;
+}
+```
+
+-----
+
+## 17. EFFETS VISUELS DYNAMIQUES
+
+### A. Parallax Scroll Effect
+
+```css
+/* Container avec perspective */
+.parallax-container {
+  perspective: 1px;
+  height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* Élément en parallax */
+.parallax-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  transform-style: preserve-3d;
+}
+
+.parallax-layer.background {
+  transform: translateZ(-1px) scale(2);
+  /* Bouge plus lentement que le scroll */
+}
+
+.parallax-layer.foreground {
+  transform: translateZ(0);
+  /* Bouge à la vitesse normale */
+}
+```
+
+**JavaScript pour parallax fluide :**
+
+```javascript
+window.addEventListener('scroll', () => {
+  const scrolled = window.pageYOffset;
+  const parallaxElements = document.querySelectorAll('.parallax');
+  
+  parallaxElements.forEach(el => {
+    const speed = el.dataset.speed || 0.5;
+    el.style.transform = `translateY(${scrolled * speed}px)`;
+  });
+});
+```
+
+### B. Morphing Shapes (Animation fluide)
+
+```css
+@keyframes morph {
+  0%, 100% {
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+  }
+  25% {
+    border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
+  }
+  50% {
+    border-radius: 50% 60% 30% 60% / 30% 60% 70% 40%;
+  }
+  75% {
+    border-radius: 60% 40% 60% 40% / 70% 50% 40% 50%;
+  }
+}
+
+.organic-shape {
+  width: 200px;
+  height: 200px;
+  background: linear-gradient(135deg, #FF6B6B, #FFA07A);
+  animation: morph 8s ease-in-out infinite;
+  opacity: 0.1;
+  position: absolute;
+  filter: blur(40px);
+}
+```
+
+### C. Animated Gradient Background
+
+```css
+.animated-bg {
+  background: linear-gradient(
+    -45deg,
+    #FF6B6B,
+    #FFA07A,
+    #FDCB6E,
+    #00B894
+  );
+  background-size: 400% 400%;
+  animation: gradient-flow 15s ease infinite;
+}
+
+@keyframes gradient-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+```
+
+### D. Particle Effect (Célébration)
+
+```css
+/* Effet confetti lors de validation d'événement */
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+.confetti-piece {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  background: #FF6B6B;
+  animation: confetti-fall 3s ease-out forwards;
+  /* Position et delay randomisés via JavaScript */
+}
+```
+
+### E. Neumorphism (Effet 3D subtil)
+
+```css
+.neomorphic-card {
+  background: #F7F9FC;
+  border-radius: 16px;
+  box-shadow: 
+    8px 8px 16px rgba(0, 0, 0, 0.1),
+    -8px -8px 16px rgba(255, 255, 255, 0.8);
+}
+
+.neomorphic-card.pressed {
+  box-shadow: 
+    inset 4px 4px 8px rgba(0, 0, 0, 0.1),
+    inset -4px -4px 8px rgba(255, 255, 255, 0.8);
+}
+```
+
+-----
+
+## 18. LOADING STATES & FEEDBACK
+
+### A. Skeleton Screens
+
+```css
+.skeleton-card {
+  background: #F7F9FC;
+  border-radius: 16px;
+  padding: 16px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-line {
+  height: 16px;
+  background: linear-gradient(
+    90deg,
+    #E0E6EB 0%,
+    #F0F3F7 50%,
+    #E0E6EB 100%
+  );
+  background-size: 200% 100%;
+  border-radius: 4px;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+}
+
+.skeleton-line.title {
+  width: 60%;
+  height: 20px;
+  margin-bottom: 12px;
+}
+
+.skeleton-line.text {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.skeleton-line.short {
+  width: 40%;
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+```
+
+### B. Progress Indicators
+
+```css
+/* Circular progress (vote completion) */
+.circular-progress {
+  position: relative;
+  width: 60px;
+  height: 60px;
+}
+
+.circular-progress svg {
+  transform: rotate(-90deg);
+}
+
+.circular-progress circle {
+  fill: none;
+  stroke: #DFE6E9;
+  stroke-width: 6;
+}
+
+.circular-progress circle.progress {
+  stroke: #00B894;
+  stroke-dasharray: 188; /* 2 * π * r */
+  stroke-dashoffset: calc(188 - (188 * var(--progress)) / 100);
+  transition: stroke-dashoffset 0.5s ease;
+}
+
+.circular-progress-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+  font-weight: 700;
+  color: #2D3436;
+}
+```
+
+### C. Spinner
+
+```css
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #DFE6E9;
+  border-top-color: #FF6B6B;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Variant dots */
+.spinner-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.spinner-dot {
+  width: 12px;
+  height: 12px;
+  background: #FF6B6B;
+  border-radius: 50%;
+  animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.spinner-dot:nth-child(1) { animation-delay: -0.32s; }
+.spinner-dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounce {
+  0%, 80%, 100% { 
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  40% { 
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+```
+
+-----
+
+## 19. SPECIAL EFFECTS (Touches WOW)
+
+### A. Hover Card 3D Tilt
+
+```css
+.tilt-card {
+  transform-style: preserve-3d;
+  transition: transform 0.1s ease;
+}
+
+/* JavaScript requis pour calculer l'angle selon position souris */
+.tilt-card:hover {
+  transform: perspective(1000px) 
+              rotateX(var(--rotate-x)) 
+              rotateY(var(--rotate-y))
+              scale(1.02);
+}
+
+.tilt-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  border-radius: inherit;
+}
+
+.tilt-card:hover::before {
+  opacity: 1;
+}
+```
+
+### B. Text Reveal Animation
+
+```css
+.text-reveal {
+  overflow: hidden;
+}
+
+.text-reveal span {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(100%);
+  animation: reveal 0.6s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+}
+
+.text-reveal span:nth-child(1) { animation-delay: 0.1s; }
+.text-reveal span:nth-child(2) { animation-delay: 0.2s; }
+.text-reveal span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes reveal {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+```
+
+### C. Ripple Effect (Material Design)
+
+```css
+.ripple-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  transform: scale(0);
+  animation: ripple-animation 0.6s ease-out;
+  pointer-events: none;
+}
+
+@keyframes ripple-animation {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+```
+
+**JavaScript pour ripple :**
+
+```javascript
+element.addEventListener('click', (e) => {
+  const ripple = document.createElement('span');
+  ripple.classList.add('ripple');
+  
+  const rect = element.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height);
+  const x = e.clientX - rect.left - size / 2;
+  const y = e.clientY - rect.top - size / 2;
+  
+  ripple.style.width = ripple.style.height = `${size}px`;
+  ripple.style.left = `${x}px`;
+  ripple.style.top = `${y}px`;
+  
+  element.appendChild(ripple);
+  
+  setTimeout(() => ripple.remove(), 600);
+});
+```
+
+### D. Glitch Effect (Pour états d’erreur)
+
+```css
+@keyframes glitch {
+  0% {
+    transform: translate(0);
+    opacity: 1;
+  }
+  20% {
+    transform: translate(-2px, 2px);
+    opacity: 0.8;
+  }
+  40% {
+    transform: translate(-2px, -2px);
+    opacity: 0.9;
+  }
+  60% {
+    transform: translate(2px, 2px);
+    opacity: 0.8;
+  }
+  80% {
+    transform: translate(2px, -2px);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(0);
+    opacity: 1;
+  }
+}
+
+.glitch-text {
+  position: relative;
+  animation: glitch 0.3s ease;
+}
+
+.glitch-text::before,
+.glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.glitch-text::before {
+  color: #FF6B6B;
+  z-index: -1;
+  animation: glitch 0.3s ease infinite;
+}
+
+.glitch-text::after {
+  color: #0984E3;
+  z-index: -2;
+  animation: glitch 0.4s ease infinite reverse;
+}
+```
+
+-----
+
+## 20. THÈME & VARIATIONS
+
+### A. Event Status Theme
+
+Chaque type d’événement peut avoir une variation de couleur subtile :
+
+```css
+/* Social (par défaut) */
+.event-card.social {
+  border-left: 4px solid #FF6B6B;
+}
+
+/* Sport */
+.event-card.sport {
+  border-left: 4px solid #00B894;
+}
+
+/* Culture */
+.event-card.culture {
+  border-left: 4px solid #A29BFE;
+}
+
+/* Voyage */
+.event-card.travel {
+  border-left: 4px solid #0984E3;
+}
+
+/* Célébration */
+.event-card.celebration {
+  border-left: 4px solid #FDCB6E;
+  background: linear-gradient(
+    135deg,
+    rgba(253, 203, 110, 0.05),
+    transparent
+  );
+}
+```
+
+### B. Seasonal Themes (Optionnel)
+
+```css
+/* Été */
+body.theme-summer {
+  --accent: #FFA500;
+  --bg-gradient: linear-gradient(180deg, #FFF4E6, #FFE5CC);
+}
+
+/* Hiver */
+body.theme-winter {
+  --accent: #74B9FF;
+  --bg-gradient: linear-gradient(180deg, #E8F4F8, #D5E8F0);
+}
+
+/* Automne */
+body.theme-autumn {
+  --accent: #D63031;
+  --bg-gradient: linear-gradient(180deg, #FFF3E0, #FFE8D1);
+}
+```
+
+-----
+
+## 21. MODÈLES D’ANIMATION COMPLEXES
+
+### A. Stagger Animation (Liste d’événements)
+
+```css
+.event-list-item {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fade-in-up 0.4s ease forwards;
+}
+
+.event-list-item:nth-child(1) { animation-delay: 0.05s; }
+.event-list-item:nth-child(2) { animation-delay: 0.1s; }
+.event-list-item:nth-child(3) { animation-delay: 0.15s; }
+.event-list-item:nth-child(4) { animation-delay: 0.2s; }
+.event-list-item:nth-child(5) { animation-delay: 0.25s; }
+
+@keyframes fade-in-up {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+```
+
+### B. Page Transition
+
+```css
+/* Sortie */
+@keyframes page-exit {
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+    filter: blur(10px);
+  }
+}
+
+/* Entrée */
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: scale(1.05);
+    filter: blur(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+}
+
+.page-transition-exit {
+  animation: page-exit 0.3s ease forwards;
+}
+
+.page-transition-enter {
+  animation: page-enter 0.3s ease forwards;
+}
+```
+
+-----
+
+## 22. RÈGLES D’UTILISATION & GOUVERNANCE
+
+### Modifications Autorisées
+
+✅ **Peuvent être ajustés sans validation :**
+
+- Espacements mineurs (±4px)
+- Durées d’animation (±0.1s)
+- Opacités et transparences
+- Tailles de police (±2px pour lisibilité)
+
+❌ **Nécessitent validation produit :**
+
+- Changement de couleurs primaires/brand
+- Modification du corner radius principal
+- Ajout de nouvelles catégories de composants
+- Changement de police principale
+
+### Processus de Mise à Jour
+
+1. **Proposer** : Documenter le changement avec before/after
+1. **Tester** : Valider sur mobile + desktop
+1. **Valider** : Approbation product owner
+1. **Documenter** : Mise à jour de ce document
+1. **Communiquer** : Notification équipe dev/design
+
+-----
+
+## 23. CHECKLIST DE CONFORMITÉ
+
+Avant de merger un composant :
+
+- [ ] Respect de la palette de couleurs définie
+- [ ] Corner radius cohérent (12px ou 16px)
+- [ ] Animations < 0.5s pour interactions
+- [ ] Contraste texte minimum 4.5:1
+- [ ] Zones tactiles minimum 44×44px
+- [ ] État focus visible
+- [ ] Responsive mobile/tablet/desktop
+- [ ] Dark mode compatible (si Phase 2+)
+- [ ] Pas de localStorage/sessionStorage dans artifacts
+- [ ] Performance : animations GPU-accelerated
+
+-----
+
+## 24. RESSOURCES & OUTILS
+
+### Design Tools
+
+- **Figma** : Design et prototypage
+- **Adobe Color** : Génération de palettes
+- **Coolors.co** : Exploration couleurs
+- **Type Scale** : Échelles typographiques
+
+### Development Tools
+
+- **Tailwind CSS** : Framework utility-first (optionnel)
+- **Framer Motion** : Animations React avancées
+- **GSAP** : Animations complexes JavaScript
+- **Lottie** : Animations vectorielles
+
+### Testing
+
+- **Chrome DevTools** : Debugging et performance
+- **Lighthouse** : Audit accessibilité et performance
+- **WebAIM Contrast Checker** : Vérification contraste
+
+-----
+
+**Version 1.0 — Design System Event’s**  
+*Dernière mise à jour : 8 Décembre 2025*  
+*Statut : Document de référence actif*
+
+-----
+
+**Ce document est la source unique de vérité pour toutes les décisions visuelles et d’interaction de Event’s. Toute implémentation doit être conforme à ces spécifications.**
 `,
   "overview": `
 [CONTENU OVERVIEW.TXT ICI]
