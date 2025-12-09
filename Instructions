@@ -1,0 +1,245 @@
+
+## 📋 Étape 2 : Intégration Documents Référents
+
+**Instruction pour GAS (à envoyer APRÈS validation Étape 1.3) :**
+
+```markdown
+# INTÉGRATION DOCUMENTS RÉFÉRENTS
+
+## Objectif
+Intégrer les 5 documents référents dans initialDocuments.ts et valider leur accessibilité.
+
+## Documents à Intégrer
+
+Je vais te fournir 5 documents en texte brut. Pour chaque document :
+
+### Document 1 : Identity.txt
+[Je fournirai le contenu complet]
+
+### Document 2 : Architecture_&_Code.txt
+[Je fournirai le contenu complet]
+
+### Document 3 : Design_System_&_Charte_UX.txt
+[Je fournirai le contenu complet]
+
+### Document 4 : Overview.txt
+[Je fournirai le contenu complet]
+
+### Document 5 : Workflow.md
+[Je fournirai le contenu complet]
+
+## Actions Requises
+
+### 1. Mise à jour initialDocuments.ts
+Remplace le contenu de src/data/initialDocuments.ts :
+
+```typescript
+export const initialDocuments: Record<string, string> = {
+  "identity": `
+[CONTENU IDENTITY.TXT ICI - EXACTEMENT COMME FOURNI]
+`,
+  "architecture": `
+[CONTENU ARCHITECTURE_&_CODE.TXT ICI]
+`,
+  "design_system": `
+[CONTENU DESIGN_SYSTEM_&_CHARTE_UX.TXT ICI]
+`,
+  "overview": `
+[CONTENU OVERVIEW.TXT ICI]
+`,
+  "workflow": `
+[CONTENU WORKFLOW.MD ICI]
+`
+};
+```
+
+**IMPORTANT :**
+
+- Utilise des template literals (backticks)
+- Préserve TOUS les sauts de ligne
+- Préserve TOUTE la mise en forme markdown
+- N’échappe PAS les caractères spéciaux (`, “, ’, )
+- Si des backticks existent dans le contenu, échappe-les avec `
+
+### 2. Génère index des sections par document
+
+Crée src/data/documentSections.ts :
+
+```typescript
+export const documentSections: Record<string, Record<string, { start: number; end: number; title: string }>> = {
+  "identity": {
+    "1_vision": { start: 0, end: X, title: "Vision" },
+    "2_mission": { start: X, end: Y, title: "Mission" },
+    // [Auto-généré en analysant les ## titres markdown]
+  },
+  // [Idem pour autres documents]
+};
+```
+
+**Méthode :**
+
+- Parse chaque document
+- Détecte les titres markdown (##, ###)
+- Calcule positions start/end (index caractères)
+- Génère structure sections
+
+### 3. Teste le chargement
+
+Crée src/utils/testDocuments.ts :
+
+```typescript
+import { initialDocuments } from '../data/initialDocuments';
+import { documentSections } from '../data/documentSections';
+
+export function validateDocuments() {
+  const results = [];
+  
+  for (const [name, content] of Object.entries(initialDocuments)) {
+    results.push({
+      document: name,
+      length: content.length,
+      sections: Object.keys(documentSections[name] || {}).length,
+      valid: content.length > 100 // Documents doivent avoir contenu
+    });
+  }
+  
+  return results;
+}
+```
+
+Appelle cette fonction au démarrage de App.tsx et affiche résultats dans console.
+
+### 4. Mise à jour System Instruction Agent Vision
+
+Dans src/services/geminiAgent.ts, assure-toi que callAgentVision() charge le document workflow :
+
+```typescript
+export async function callAgentVision(
+  messages: Array<{ role: string; content: string }>,
+  documentsContext?: Record<string, string>
+) {
+  const workflowDoc = documentsContext?.workflow || initialDocuments.workflow;
+  
+  const systemInstruction = `
+Tu es l'Agent Vision, coordinateur du système Event's.
+
+${workflowDoc}
+
+[Reste des instructions...]
+`;
+  
+  // [Suite du code...]
+}
+```
+
+### 5. Teste l’accès dans l’UI
+
+Ajoute un composant temporaire src/components/DocumentDebug.tsx :
+
+```typescript
+import { documentStore } from '../services/documentStore';
+
+export const DocumentDebug = () => {
+  const docs = documentStore.getAllDocuments();
+  
+  return (
+    <div className="p-4 bg-gray-100 rounded">
+      <h3 className="font-bold mb-2">📚 Documents Chargés</h3>
+      {Object.entries(docs).map(([name, doc]) => (
+        <div key={name} className="mb-2">
+          <span className="font-mono text-sm">
+            {name}: {doc.content.length} chars, v{doc.version}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+};
+```
+
+Ajoute ce composant temporairement dans App.tsx pour validation visuelle.
+
+## Format Réponse Attendu
+
+```
+✅ DOCUMENTS INTÉGRÉS
+
+## Statistiques
+- identity: 12,543 caractères, 8 sections
+- architecture: 45,234 caractères, 15 sections
+- design_system: 38,129 caractères, 12 sections
+- overview: 8,234 caractères, 7 sections
+- workflow: 15,432 caractères, 9 sections
+
+TOTAL: 119,572 caractères
+
+## Index Sections Généré
+✅ documentSections.ts créé (51 sections totales)
+
+## Tests
+✅ validateDocuments() : Tous documents valides
+✅ localStorage.initialize() : OK
+✅ Agent Vision accède workflow : OK
+✅ DocumentDebug affiche correctement : OK
+
+## Status
+🟢 DOCUMENTS OPÉRATIONNELS
+
+Prochaine étape : Intégration Firebase et Cloud Functions
+```
+
+## Points de Validation Critiques
+
+Après intégration, je vérifierai :
+
+1. Les documents sont lisibles dans localStorage (DevTools)
+1. Agent Vision peut lire workflow dans son system instruction
+1. Pas d’erreur d’échappement de caractères
+1. Index sections correspond aux titres réels
+
+Si tout est vert, on passe à l’intégration Firebase.
+
+```
+---
+
+## 🤔 Mon Avis sur cette Approche
+
+### ✅ Avantages
+1. **Validation progressive** : Évite erreurs accumulées
+2. **Visibilité claire** : Tu vois exactement où on en est
+3. **Point de contrôle** : Tu valides avant de passer à Firebase
+4. **Debugging facilité** : Si problème, on sait exactement où
+
+### ⚠️ Points d'Attention
+1. **Taille des documents** : ~120K caractères dans un seul fichier TypeScript
+   - Solution : Ça reste OK pour TypeScript, mais surveiller build time
+2. **Échappement backticks** : Si tes documents contiennent des \`\`\`, il faudra les échapper
+   - Solution : L'agent devrait détecter et gérer automatiquement
+
+### 💡 Amélioration Suggérée
+Au lieu d'envoyer les 5 documents en une fois, envoyer un par un :
+```
+
+1. Envoie Identity.txt → Agent intègre → Valide → OK
+1. Envoie Architecture → Agent intègre → Valide → OK
+   [etc.]
+
+```
+**Avantage :** Si erreur d'intégration, plus facile à corriger.
+
+---
+
+## 🎯 Recommandation Finale
+
+**Oui, cette approche est solide.** Procède ainsi :
+
+1. **Maintenant** : Envoie instruction Étape 1.3 à GAS
+2. **Attend** : "🟢 PRÊT À RECEVOIR DOCUMENTS"
+3. **Ensuite** : Envoie instruction Étape 2 + documents un par un ou tous ensemble (ton choix)
+4. **Valide** : Vérifie localStorage dans navigateur
+5. **Continue** : Passe à Firebase
+
+**Alternative rapide** : Si tu veux aller plus vite, combine Étape 1.3 + 2 en une seule instruction avec tous les documents. Risque : Debug plus difficile si problème.
+
+**Mon conseil** : Sépare comme tu proposes. C'est plus sûr.​​​​​​​​​​​​​​​​
+```
