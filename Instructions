@@ -5395,10 +5395,379 @@ Avant de merger un composant :
 **Ce document est la source unique de vérité pour toutes les décisions visuelles et d’interaction de Event’s. Toute implémentation doit être conforme à ces spécifications.**
 `,
   "overview": `
-[CONTENU OVERVIEW.TXT ICI]
-`,
-  "workflow": `
-[CONTENU WORKFLOW.MD ICI]
+
+---
+Version: 1.0.0
+Date: 2025-12-08
+Changelog:
+  - 1.0.0 (2025-12-08): Initialisation du document
+Breaking Changes: Aucun depuis 1.0.0
+---
+Règle de versioning :
+	•	Major (X.0.0) : Pivot stratégique (Identity modifié)
+	•	Minor (1.X.0) : Nouvelle feature majeure (Architecture/Design modifié)
+	•	Patch (1.2.X) : Adaptation technique (ex: Replit-specific)
+---
+# 🎯 Event's Overview
+
+## 1. Vision & Positionnement Produit
+
+**Mission claire :** *“Event’s transforme les ‘on devrait se voir’ en vrais événements confirmés.”*
+
+**KPI de succès unique :** Taux d’événements réellement réalisés / événements créés (cible : >60%)
+
+**Principe directeur :** **“Fast First, Detailed Later”**
+
+- Mode Express : 3 clics pour “Bières ce soir ?”
+- Mode Planification : Options avancées disponibles mais jamais imposées
+
+**Positionnement stratégique :** Augmenter WhatsApp + Doodle, ne pas les remplacer. Event’s doit être complémentaire, pas disruptif.
+
+-----
+
+## 2. Parcours Utilisateur Repensé
+
+### A. Onboarding Minimaliste
+
+**Obligatoire à l’inscription :**
+
+- Prénom
+- Photo de profil (optionnel mais fortement encouragé)
+
+**Ajout progressif (gamifié) :**
+
+- Date d’anniversaire (pour notifications groupe)
+- Disponibilités générales (widget visuel simple : semaine/weekend, jour/soir)
+- Stats auto-générées : “15 événements cette année”, “Score fiabilité 90%”
+- Badges : “Organisateur fiable”, “Toujours présent”
+
+### B. Système de Vote Révolutionné
+
+**🚫 ABANDONNER :** L’entonnoir Mois → Semaine → Jour → Heure
+
+**✅ ADOPTER :** Système de créneaux proposés (type Doodle++)
+
+**Fonctionnement :**
+
+1. **Proposition :** Le créateur ET les membres peuvent proposer 2-5 créneaux complets (date + heure début/fin)
+1. **Vote unique :** Chaque participant vote en une fois :
+
+- ✅ **“Je peux”** (vert)
+- 🤔 **“Si nécessaire”** (orange)
+- ❌ **“Pas dispo”** (rouge)
+
+1. **Visualisation :** Heatmap montrant en vert foncé les créneaux optimaux
+1. **Validation intelligente :**
+
+- **Auto (par défaut) :** Si un créneau atteint 80% de “Je peux”
+- **Manuelle :** Le créateur choisit parmi le top 3
+- **Deadline automatique :** 48h avant la date la plus proche, notification “Confirme ta présence !”
+
+**Gestion des “Peut-être” (killer feature) :**
+
+- Option **“Soft commit”** : “Je viens si au moins X personnes viennent”
+- Notification progressive : “Il reste 24h pour confirmer”
+- Après deadline : Conversion auto en “Non” sauf si l’utilisateur confirme
+
+-----
+
+## 3. Architecture des États d’Événement
+
+|État               |Ce que voient les membres  |CTA principal        |Badge|
+|-------------------|---------------------------|---------------------|-----|
+|💡 **Idée**         |Proposition non validée    |“Voter mon intérêt”  |🟡    |
+|📅 **Vote en cours**|Sondage de dates actif     |“Voter mes dispos”   |🟠    |
+|⏳ **En validation**|Choix majoritaire identifié|“Attendre validation”|🟣    |
+|✅ **Confirmé**     |Tout verrouillé            |“Voir détails” + 📅   |🟢    |
+|📸 **Passé**        |Événement terminé          |“Ajouter photos”     |⚪    |
+|❌ **Annulé**       |Événement annulé           |—                    |🔴    |
+
+**Avantage :** Clarté immédiate pour tous les membres sur l’avancement.
+
+-----
+
+## 4. Chat & Discussion : Toujours Ouvert
+
+**Principe critique :** *“Si le chat est bloqué, je retourne sur WhatsApp → mort de l’app”*
+
+**Interface recommandée :**
+
+```
+┌─────────────────────────────────────┐
+│ 📌 ZONE DE VOTE (épinglée)          │
+│   🗓️ Dates proposées [Vote ici]    │
+│   🎒 À apporter [Qui prend quoi ?]  │
+│   💰 Dépenses [Qui a payé ?]        │
+└─────────────────────────────────────┘
+┌─────────────────────────────────────┐
+│ 💬 DISCUSSION                       │
+│   Alice : "On se retrouve où ?"     │
+│   Bob : "Je propose chez moi"       │
+│   [Messages défilants...]           │
+└─────────────────────────────────────┘
+```
+
+**Fonctionnalité bonus :** Bouton **“Résumé IA”** qui extrait :
+
+- Décisions prises (“Date fixée au 12 juin”)
+- Infos pratiques (“Code porte : 48B”)
+- Qui apporte quoi
+
+-----
+
+## 5. Gestion des Rôles & Modération
+
+### Rôles clarifiés :
+
+|Rôle               |Permissions                        |Comment l’obtenir      |
+|-------------------|-----------------------------------|-----------------------|
+|**Créateur**       |Lance l’événement, valide les choix|Création de l’événement|
+|**Co-organisateur**|Idem créateur                      |Nommé par créateur     |
+|**Membre**         |Vote, propose options, discute     |Appartient au groupe   |
+
+### Anti-blocage :
+
+- **Système de “Poke”** : Les membres peuvent notifier le créateur : “⏰ On attend ta validation !”
+- **Validation automatique** : Si quorum atteint + 24h sans réaction du créateur
+- **Transfert de modération** : Si le créateur quitte le groupe, il doit désigner un successeur
+
+-----
+
+## 6. Gestion Financière Sécurisée
+
+### ❌ À NE JAMAIS FAIRE :
+
+- Stocker des IBAN
+- Gérer de l’argent réel directement
+
+### ✅ Solutions recommandées :
+
+**MVP (V1) :** Tracker de dettes simple
+
+- “Qui doit combien à qui”
+- Checkbox “J’ai payé ma part”
+- Aucun argent réel géré
+
+**V2 :** Intégration paiement tiers
+
+- Champ “Lien de paiement” : Le créateur colle son lien Lydia/PayPal/Revolut/Tricount
+- Optionnel : Intégration API Stripe pour cagnotte événementielle
+
+-----
+
+## 7. Architecture Technique Firebase
+
+### Collections Firestore :
+
+```
+users/
+  {userId}/
+    - name, photoURL, fcmToken
+    - preferences: { availabilities }
+    - stats: { eventsCreated, eventsAttended, reliabilityScore }
+
+groups/
+  {groupId}/
+    - name, description, privacy (public/private)
+    - members: [{ userId, role: "creator"|"co-organizer"|"member" }]
+    - createdAt
+
+events/
+  {eventId}/
+    - groupId, title, description
+    - status: "idea"|"voting"|"pending_validation"|"confirmed"|"past"|"cancelled"
+    - createdBy, organizerIds: []
+    - dateOptions: [
+        { optionId, start, end, 
+          votes: [{ userId, response: "yes"|"maybe"|"no" }]
+        }
+      ]
+    - chosenDate: { start, end } (si confirmé)
+    - contributions: [{ item, takenBy: userId }]
+    - expenses: { link, amount, whoPaid: [userId] }
+    
+    messages/ (subcollection)
+      {messageId}/
+        - senderId, text, timestamp
+```
+
+### Règles de sécurité :
+
+- Seuls les membres du groupe peuvent lire/écrire les événements
+- Seuls créateur/co-organisateurs peuvent changer le statut
+- Tout membre peut proposer des options de date
+
+-----
+
+## 8. Navigation & Vues
+
+```
+📱 Event's
+│
+├── 🏠 Dashboard (HUB CENTRAL)
+│   ├── 🔔 Actions requises (priorisées)
+│   │   └── "🗳️ Voter pour [Événement X]"
+│   │   └── "✅ Confirmer présence [Y]"
+│   ├── 📅 Prochains événements confirmés
+│   └── 💡 Suggestions IA
+│       └── "☀️ Il va faire beau samedi, rando ?"
+│
+├── 👤 Mon Profil
+│   ├── Infos perso
+│   ├── 📊 Stats & 🏆 Badges
+│   └── ⏰ Disponibilités générales
+│
+├── 👥 Mes Groupes
+│   └── [Groupe X]
+│       ├── 💬 Discussion générale
+│       ├── 📅 Événements du groupe
+│       │   ├── Vue Kanban (optionnel)
+│       │   └── Vue Calendrier
+│       └── 👥 Membres
+│
+├── 🎉 Mes Événements (vue transversale)
+│   ├── Filtres : par groupe, par statut
+│   ├── 📅 Vue Calendrier mensuel
+│   └── 📋 Vue Liste
+│
+└── 🔍 Recherche
+    ├── 👤 Amis
+    └── 👥 Groupes publics
+```
+
+**Principe :** Le Dashboard est le cerveau. Si bien fait, “Mes Événements” devient juste un filtre avancé.
+
+-----
+
+## 9. Intégration IA (Google AI Studio)
+
+### Cas d’usage concrets :
+
+|Fonctionnalité            |Déclencheur               |Valeur                                                             |
+|--------------------------|--------------------------|-------------------------------------------------------------------|
+|**Détection conflits**    |Événement proposé         |“⚠️ Tu as déjà ‘Anniversaire Maman’ le 15 juin”                     |
+|**Suggestions proactives**|Données météo + historique|“☀️ Il fait beau samedi, rando au Lac X ?”                          |
+|**Résumé discussion**     |Bouton manuel             |Extrait décisions clés du chat                                     |
+|**Smart defaults**        |Création événement        |Suggère créneaux basés sur dispo groupe                            |
+|**Analyseur d’engagement**|Post-événement            |“48% de participation ce mois → Tester des activités différentes ?”|
+
+-----
+
+## 10. Roadmap MVP Stricte
+
+### Phase 1 : Core Loop (4-6 semaines) ✅
+
+**Objectif :** Organiser 1 événement réel dans 5 groupes de 4-6 personnes
+
+**Features :**
+
+- ✅ Auth Firebase (Google + Email)
+- ✅ Créer/rejoindre groupe (lien d’invitation)
+- ✅ Créer événement simple :
+  - Titre + description
+  - Proposer 2-3 créneaux
+- ✅ Vote sur créneaux (interface type Doodle)
+- ✅ Validation manuelle par créateur
+- ✅ Chat dédié à l’événement
+- ✅ Dashboard : “Actions requises” + “Prochains événements”
+
+**Critère de succès :** Taux de conversion >50% (événements créés → événements réalisés)
+
+### Phase 2 : Si traction (2-3 mois) 📈
+
+- ✅ Vue Calendrier (mensuel)
+- ✅ Système “À apporter” (liste collaborative)
+- ✅ Tracker dépenses simple
+- ✅ Notifications push intelligentes
+- ✅ Export vers Google/Apple Calendar
+- ✅ Validation automatique (quorum)
+
+### Phase 3 : Polish & Scale (6+ mois) 🚀
+
+- ✅ Vue Kanban
+- ✅ Co-organisateurs & transfert modération
+- ✅ Intégration paiement (Lydia/Stripe)
+- ✅ IA : suggestions, résumés, détection conflits
+- ✅ Galerie photos post-événement
+- ✅ Groupes publics + recherche
+- ✅ Templates d’événements
+- ✅ Gamification avancée
+
+-----
+
+## 11. Pièges à Éviter Absolument
+
+|❌ Piège                     |💥 Conséquence           |✅ Solution                        |
+|----------------------------|------------------------|----------------------------------|
+|Profil trop détaillé        |Abandon onboarding (70%)|Prénom + photo uniquement         |
+|Chat bloqué avant validation|Fuite vers WhatsApp     |Chat ouvert dès création          |
+|Entonnoir de vote trop long |Découragement           |Sondage créneaux en une fois      |
+|Modérateur unique absent    |Événement gelé          |Co-organisateurs + validation auto|
+|Gestion argent réel         |Cauchemar légal         |Lien externe ou tracker           |
+|Trop de features en V1      |Jamais fini             |MVP strict 4-6 semaines           |
+|Feature “cool” sans usage   |Complexité inutile      |Tester avant d’implémenter        |
+
+-----
+
+## 12. Plan d’Action Concret
+
+### Semaine 1-2 : Prototypage
+
+- [ ] Créer écrans principaux sur Figma
+- [ ] Tester avec 5 amis sur cas simple (“Organiser un apéro”)
+- [ ] Identifier frictions majeures
+
+### Semaine 3-6 : Développement MVP
+
+- [ ] Setup Firebase (Auth + Firestore + Functions)
+- [ ] Implémenter Core Loop
+- [ ] **Pas de Kanban, pas d’IA** → Juste l’essentiel
+
+### Semaine 7-8 : Test réel
+
+- [ ] 3-5 groupes utilisent Event’s pendant 2 semaines
+- [ ] Mesurer taux conversion événements créés → réalisés
+- [ ] Collecter feedback brutal
+
+### Après : Décision
+
+- **Si taux >60%** → Continue Phase 2
+- **Si taux <40%** → Identifie le blocage (trop complexe ? pas assez de valeur ?)
+
+-----
+
+## 13. Questions Critiques à Trancher Maintenant
+
+Avant de coder, réponds à :
+
+1. **Metric de succès :** Nombre créés OU réalisés ?  
+   → **Réponse : Réalisés** (sinon juste du bruit)
+1. **Taille groupe cible :** 3 ? 10 ? 50 personnes ?  
+   → **Réponse : 4-12** (groupe d’amis proche)
+1. **Cold start problem :** Comment engager si amis pas là ?  
+   → **Réponse : Invitation virale** (“Rejoins Event’s pour voter sur notre soirée !”)
+1. **Monétisation :** Freemium ? Premium ?  
+   → **Recommandation MVP : Gratuit total**. Monétisation en V3.
+
+-----
+
+## 🎯 Conclusion & Message Final
+
+**Event’s a un potentiel énorme**, mais son succès dépend de ta capacité à **rester simple en V1**.
+
+### Le principe d’or :
+
+> *“Event’s doit disparaître derrière l’action. Dire ‘On organise ça sur Event’s !’ doit être plus simple qu’un thread WhatsApp, jamais plus compliqué.”*
+
+### Les 3 commandements :
+
+1. **Simplicité radicale** → Chaque clic doit avoir une justification
+1. **Valeur immédiate** → L’utilisateur doit voir le bénéfice dès le 1er événement
+1. **Itération rapide** → Mieux vaut un MVP en 6 semaines qu’un produit parfait jamais fini
+
+**Ton avantage compétitif :** Tu résous un vrai problème (organiser entre amis) que personne ne résout bien. WhatsApp est trop chaotique, Doodle trop froid, Facebook Events trop complexe.
+
+**Bonne chance et n’oublie pas :** Le meilleur produit est celui qui est lancé. 🚀
 `
 };
 ```
@@ -5548,48 +5917,3 @@ Après intégration, je vérifierai :
 1. Index sections correspond aux titres réels
 
 Si tout est vert, on passe à l’intégration Firebase.
-
-```
----
-
-## 🤔 Mon Avis sur cette Approche
-
-### ✅ Avantages
-1. **Validation progressive** : Évite erreurs accumulées
-2. **Visibilité claire** : Tu vois exactement où on en est
-3. **Point de contrôle** : Tu valides avant de passer à Firebase
-4. **Debugging facilité** : Si problème, on sait exactement où
-
-### ⚠️ Points d'Attention
-1. **Taille des documents** : ~120K caractères dans un seul fichier TypeScript
-   - Solution : Ça reste OK pour TypeScript, mais surveiller build time
-2. **Échappement backticks** : Si tes documents contiennent des \`\`\`, il faudra les échapper
-   - Solution : L'agent devrait détecter et gérer automatiquement
-
-### 💡 Amélioration Suggérée
-Au lieu d'envoyer les 5 documents en une fois, envoyer un par un :
-```
-
-1. Envoie Identity.txt → Agent intègre → Valide → OK
-1. Envoie Architecture → Agent intègre → Valide → OK
-   [etc.]
-
-```
-**Avantage :** Si erreur d'intégration, plus facile à corriger.
-
----
-
-## 🎯 Recommandation Finale
-
-**Oui, cette approche est solide.** Procède ainsi :
-
-1. **Maintenant** : Envoie instruction Étape 1.3 à GAS
-2. **Attend** : "🟢 PRÊT À RECEVOIR DOCUMENTS"
-3. **Ensuite** : Envoie instruction Étape 2 + documents un par un ou tous ensemble (ton choix)
-4. **Valide** : Vérifie localStorage dans navigateur
-5. **Continue** : Passe à Firebase
-
-**Alternative rapide** : Si tu veux aller plus vite, combine Étape 1.3 + 2 en une seule instruction avec tous les documents. Risque : Debug plus difficile si problème.
-
-**Mon conseil** : Sépare comme tu proposes. C'est plus sûr.​​​​​​​​​​​​​​​​
-```
