@@ -1,4 +1,560 @@
 
+Voici les instructions que je lui ai transmises :
+
+
+# Instructions Complètes pour Google AI Studio (Gemini 3)
+
+## 🎯 Objectif
+
+Créer un système multi-agents orchestré pour Event’s avec :
+
+- Agent Vision (coordinateur) + 4 agents spécialisés (Kode, UI, Replit, QA)
+- Documents référents stockés dans Firestore (modifiables par agents avec validation utilisateur)
+- Interface web simple pour interaction uniquement avec Agent Vision
+
+-----
+
+## 📋 Instructions pour Google AI Studio
+
+**Contexte** : Je développe Event’s, une application d’organisation d’événements entre amis. J’ai 5 documents référents qui définissent l’identité, l’architecture, le design, la roadmap et le workflow du projet. Je veux automatiser la coordination entre différents agents AI spécialisés.
+
+### Architecture Demandée
+
+```
+Utilisateur (moi)
+    ↓
+Interface Web (chat simple)
+    ↓
+Agent Vision (Gemini 3 - Coordinateur)
+    ├→ Lit/Modifie documents Firestore
+    ├→ Dispatche vers Agent Kode (architecture)
+    ├→ Dispatche vers Agent UI (design)
+    ├→ Dispatche vers Agent Replit (instructions)
+    └→ Dispatche vers Agent QA (validation)
+    ↓
+Propose modifications documents
+    ↓
+Je valide via boutons (Approuver/Refuser)
+    ↓
+Application automatique si approuvé
+```
+
+### Firestore Collections Nécessaires
+
+```javascript
+// Collection: reference_documents
+{
+  "identity": {
+    version: "1.0.0",
+    content: "[Contenu texte complet du document]",
+    lastModified: timestamp,
+    changelog: [{ version, date, changes, approvedBy }]
+  },
+  "architecture": { /* idem */ },
+  "design_system": { /* idem */ },
+  "overview": { /* idem */ },
+  "workflow": { /* idem */ }
+}
+
+// Collection: conversations
+{
+  conversationId: "conv_xxx",
+  messages: [
+    { role: "user", content: "...", timestamp },
+    { role: "agent_vision", content: "...", timestamp }
+  ],
+  status: "active"
+}
+
+// Collection: document_proposals
+{
+  proposalId: "prop_xxx",
+  documentName: "architecture",
+  proposedChanges: {
+    section: "Section 7",
+    additionType: "append", // ou "replace", "insert"
+    content: "Nouveau contenu à ajouter"
+  },
+  justification: "Raison de la modification",
+  diffPreview: "--- Original\n+++ Proposé\n...",
+  status: "pending_approval", // "approved", "rejected"
+  createdAt: timestamp
+}
+
+// Collection: decisions
+{
+  decisionId: "dec_xxx",
+  title: "Titre court",
+  context: "Pourquoi cette décision",
+  decision: "Choix retenu",
+  impact: { architecture: [...], designSystem: [...] },
+  compatibility: { identityCompliant: true, riskLevel: "low" },
+  status: "approved",
+  conversationRef: "conv_xxx"
+}
+```
+
+### Cloud Functions Requises
+
+**Function 1: chatWithVision** (Point d’entrée principal)
+
+```typescript
+// Endpoint: POST /chatWithVision
+// Input: { message: string, conversationId: string }
+// Output: { response: string, proposalId?: string }
+
+Comportement:
+1. Charger historique conversation depuis Firestore
+2. Initialiser Gemini 3 avec system instruction (voir ci-dessous)
+3. Envoyer message avec historique
+4. Traiter function calls si Agent Vision les déclenche
+5. Sauvegarder réponse dans Firestore
+6. Retourner réponse (+ proposalId si modification proposée)
+```
+
+**Function 2: approveProposal**
+
+```typescript
+// Input: { proposalId: string }
+// Output: { success: boolean, newVersion: string }
+
+Comportement:
+1. Récupérer proposition depuis Firestore
+2. Appliquer changements au document concerné
+3. Incrémenter version (patch si N3, minor si N2)
+4. Ajouter changelog
+5. Marquer proposition comme "approved"
+```
+
+**Function 3: rejectProposal**
+
+```typescript
+// Input: { proposalId: string, reason: string }
+// Output: { success: boolean }
+
+Comportement:
+1. Marquer proposition comme "rejected"
+2. Logger raison du refus
+```
+
+### System Instruction pour Agent Vision
+
+```
+Tu es l'Agent Vision, coordinateur du système Event's.
+
+## Documents Référents (Hiérarchie)
+NIVEAU 1 (IMMUABLE): Identity.txt
+NIVEAU 2 (STABLE): Architecture_&_Code.txt, Design_System_&_Charte_UX.txt
+NIVEAU 3 (ÉVOLUTIF): Overview.txt
+
+## Ton Rôle
+1. Analyser chaque demande utilisateur
+2. Utiliser readReferenceDocument() pour consulter les docs
+3. Identifier type: Stratégique/Technique/Design/Mixte
+4. Dispatcher vers agents spécialisés si nécessaire:
+   - consultAgentKode() pour architecture/code
+   - consultAgentUI() pour design/UX
+   - consultAgentReplit() pour instructions implémentation
+   - consultAgentQA() pour critères validation
+5. Vérifier conformité avec Identity (NIVEAU 1)
+6. Proposer modifications docs via proposeDocumentUpdate() SI:
+   - Nouvelle feature nécessite ajout specs
+   - Compromis technique doit être documenté
+   - Évolution pattern canonique
+7. TOUJOURS soumettre modifications N1/N2 à validation utilisateur
+
+## Functions Disponibles
+- readReferenceDocument(documentName): Lit un document complet
+- consultAgentKode(query, context): Consulte expert architecture
+- consultAgentUI(query, context): Consulte expert design
+- consultAgentReplit(query, context): Génère instructions Replit
+- consultAgentQA(query, context): Définit critères validation
+- proposeDocumentUpdate(documentName, changes, justification): Propose modification
+- createDecisionRecord(data): Enregistre décision majeure
+
+## Format Réponse Standard
+### 📋 Analyse
+[Résumé demande en 2-3 phrases]
+
+### 🎯 Type
+[Stratégique/Technique/Design/Mixte]
+
+### 📚 Documents Concernés
+- Identity.txt: Section X
+- Architecture_&_Code.txt: Section Y
+
+### ⚠️ Red Flags
+[S'il y en a, sinon "Aucun"]
+
+### 💡 Recommandation
+[Plan d'action clair et actionnable]
+
+### 📝 Prochaines Étapes
+1. [Étape concrète]
+2. [Étape concrète]
+
+## Red Flags à Détecter
+- Contradiction avec Identity (principes immuables)
+- Feature hors scope MVP actuel
+- Complexité disproportionnée vs KPI principal
+- Gestion argent réel en V1
+- Modification NIVEAU 1 sans justification pivot
+
+## Workflow Standard (Demande Mixte)
+1. Lire Identity + section concernée
+2. Dispatcher consultAgentKode() + consultAgentUI() EN PARALLÈLE
+3. Analyser réponses des agents
+4. Vérifier conformité globale
+5. Si besoin modification docs → proposeDocumentUpdate()
+6. Synthétiser recommandation finale
+7. Si décision majeure → createDecisionRecord()
+```
+
+### System Instructions Agents Spécialisés
+
+**Agent Kode**
+
+```
+Tu es l'Agent Kode, expert architecture Event's.
+
+Document référent fourni dans contexte: Architecture_&_Code.txt
+
+## Ta Mission
+- Proposer solutions conformes à la stack (React, Firebase, TypeScript)
+- Identifier impacts: Firestore, Cloud Functions, Security Rules, Performance
+- Traduire fonctionnel en contrats techniques (types, schémas)
+- Alerter si contradiction avec Architecture
+
+## Format Réponse
+### 🏗️ Architecture
+[Structures Firestore précises]
+
+### 🔒 Sécurité
+[Règles Firestore Security]
+
+### ⚡ Performance
+[Impacts estimés]
+
+### 🔧 Implémentation
+[Code TypeScript interfaces/types]
+
+### ⚠️ Alertes
+[Red flags techniques]
+```
+
+**Agent UI**
+
+```
+Tu es l'Agent UI, expert design Event's.
+
+Document référent fourni: Design_System_&_Charte_UX.txt
+
+## Ta Mission
+- Proposer écrans/composants conformes au Design System
+- Garantir simplicité (principe "Fast First, Detailed Later")
+- Refuser complexification Core Loop sans gain KPI
+- Specs concrètes React + Tailwind
+
+## Format Réponse
+### 🎨 Design
+[Composants Design System utilisés avec sections]
+
+### 🔄 Interactions
+[États, transitions, micro-interactions]
+
+### 📱 Responsive
+[Comportement mobile/tablet/desktop]
+
+### ♿ Accessibilité
+[Points a11y critiques]
+
+### ⚠️ Alertes
+[Red flags UX]
+```
+
+**Agent Replit & QA** : Instructions similaires, adaptées à leur rôle.
+
+### Interface Web Minimale
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Event's Vision</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen p-6">
+  <div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold mb-6">🎯 Event's Vision</h1>
+    
+    <!-- Chat -->
+    <div id="chat" class="bg-white rounded-lg shadow p-6 mb-4 h-96 overflow-y-auto">
+      <div class="text-gray-400 text-center">Commence à discuter...</div>
+    </div>
+    
+    <!-- Input -->
+    <div class="flex gap-2 mb-4">
+      <input id="input" type="text" placeholder="Décris ta demande..." 
+             class="flex-1 px-4 py-2 border rounded-lg" />
+      <button id="send" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+        Envoyer
+      </button>
+    </div>
+    
+    <!-- Propositions en attente -->
+    <div id="proposals"></div>
+    
+    <!-- Status -->
+    <div id="status" class="text-sm text-gray-500">
+      🟢 Agent Vision: Prêt
+    </div>
+  </div>
+  
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+    import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-functions.js';
+    import { getFirestore, collection, onSnapshot, query, where } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+    
+    const firebaseConfig = { /* Config Firebase */ };
+    const app = initializeApp(firebaseConfig);
+    const functions = getFunctions(app);
+    const db = getFirestore(app);
+    
+    const chatWithVision = httpsCallable(functions, 'chatWithVision');
+    const approveProposal = httpsCallable(functions, 'approveProposal');
+    const rejectProposal = httpsCallable(functions, 'rejectProposal');
+    
+    const conversationId = `conv_${Date.now()}`;
+    
+    // Écouter propositions en attente
+    const proposalsQuery = query(
+      collection(db, 'document_proposals'),
+      where('status', '==', 'pending_approval')
+    );
+    
+    onSnapshot(proposalsQuery, (snapshot) => {
+      const proposalsDiv = document.getElementById('proposals');
+      proposalsDiv.innerHTML = '';
+      
+      snapshot.forEach(doc => {
+        const prop = doc.data();
+        proposalsDiv.innerHTML += `
+          <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 rounded">
+            <h3 class="font-bold mb-2">⚠️ Validation Requise</h3>
+            <p class="mb-2"><strong>Document:</strong> ${prop.documentName}</p>
+            <pre class="bg-white p-2 rounded text-xs mb-2 overflow-x-auto">${prop.diffPreview}</pre>
+            <p class="text-sm mb-3">${prop.justification}</p>
+            <div class="flex gap-2">
+              <button onclick="approve('${doc.id}')" 
+                      class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+                ✅ Approuver
+              </button>
+              <button onclick="reject('${doc.id}')" 
+                      class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+                ❌ Refuser
+              </button>
+            </div>
+          </div>
+        `;
+      });
+    });
+    
+    // Handlers
+    document.getElementById('send').onclick = async () => {
+      const input = document.getElementById('input');
+      const message = input.value.trim();
+      if (!message) return;
+      
+      appendMessage('user', message);
+      input.value = '';
+      
+      document.getElementById('status').textContent = '🟡 Agent Vision: En réflexion...';
+      
+      try {
+        const result = await chatWithVision({ message, conversationId });
+        appendMessage('agent', result.data.response);
+        document.getElementById('status').textContent = '🟢 Agent Vision: Prêt';
+      } catch (error) {
+        appendMessage('error', 'Erreur: ' + error.message);
+        document.getElementById('status').textContent = '🔴 Erreur';
+      }
+    };
+    
+    window.approve = async (proposalId) => {
+      await approveProposal({ proposalId });
+      alert('✅ Modification approuvée et appliquée');
+    };
+    
+    window.reject = async (proposalId) => {
+      const reason = prompt('Raison du refus:');
+      await rejectProposal({ proposalId, reason });
+    };
+    
+    function appendMessage(role, content) {
+      const chat = document.getElementById('chat');
+      const div = document.createElement('div');
+      div.className = `mb-4 ${role === 'user' ? 'text-right' : ''}`;
+      div.innerHTML = `
+        <div class="inline-block px-4 py-2 rounded-lg max-w-xl ${
+          role === 'user' ? 'bg-blue-500 text-white' : 
+          role === 'error' ? 'bg-red-100 text-red-800' : 
+          'bg-gray-100 text-gray-800'
+        }">
+          <pre class="whitespace-pre-wrap font-sans">${content}</pre>
+        </div>
+      `;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+  </script>
+</body>
+</html>
+```
+
+-----
+
+## 🎯 Livrable Attendu de Google AI Studio
+
+**Créer un projet Firebase complet avec** :
+
+1. **Structure Firestore** (4 collections ci-dessus)
+1. **3 Cloud Functions** :
+
+- `chatWithVision` (orchestrateur principal)
+- `approveProposal` (application modifications)
+- `rejectProposal` (rejet propositions)
+
+1. **5 Agents Gemini 3** configurés :
+
+- Agent Vision (avec function calling)
+- Agent Kode
+- Agent UI
+- Agent Replit
+- Agent QA
+
+1. **Interface web** (HTML ci-dessus) déployée sur Firebase Hosting
+1. **Script d’import initial** pour charger mes 5 documents référents dans Firestore
+
+**Contraintes techniques** :
+
+- Gemini 3 gratuit uniquement
+- Function calling natif pour Agent Vision
+- Agents spécialisés appelés via fonctions JavaScript simples
+- Tout gratuit (pas de Blaze plan requis si possible)
+
+**Points critiques** :
+
+- Agent Vision DOIT demander validation avant toute modification NIVEAU 1 ou 2
+- Modifications NIVEAU 3 peuvent être appliquées directement si cohérentes
+- Decision Log créé automatiquement pour décisions majeures
+- Versioning sémantique automatique (major/minor/patch)
+
+-----
+
+Instructions pour Google AI Studio - Étape 1.3 & 2
+🎯 Contexte
+Tu as déjà créé l’application React avec les composants de base. Maintenant, je vais vérifier la structure du projet et te préparer pour recevoir les documents référents.
+
+✅ Étape 1.3 : Vérification Structure Projet
+Instruction pour GAS :
+code 
+Markdown
+
+# VÉRIFICATION STRUCTURE PROJET
+
+## Objectif
+Confirme que la structure du projet respecte l'architecture définie et prépare l'intégration des documents référents.
+
+## Actions Requises
+
+### 1. Liste tous les fichiers créés
+Génère un rapport listant TOUS les fichiers du projet avec leur chemin complet :
+- public/
+- src/ (tous sous-dossiers et fichiers)
+- Configuration (package.json, tsconfig.json, etc.)
+
+### 2. Vérifie la présence des fichiers critiques
+Confirme l'existence de :
+- [ ] src/types.ts (avec interfaces Message, Proposal, ReferenceDocument, AgentType)
+- [ ] src/data/initialDocuments.ts (prêt à recevoir contenu)
+- [ ] src/services/documentStore.ts (gestion localStorage)
+- [ ] src/services/geminiAgent.ts (callAgentVision, consultAgent)
+- [ ] src/components/ChatInterface.tsx
+- [ ] src/components/ProposalCard.tsx
+- [ ] src/App.tsx (logique orchestration)
+
+### 3. Vérifie les dépendances package.json
+Confirme installation :
+- firebase
+- @google/generative-ai
+- lucide-react
+- react-markdown
+- tailwindcss
+
+### 4. Vérifie configuration Tailwind
+Confirme présence :
+- tailwind.config.js (avec content paths)
+- postcss.config.js
+
+### 5. Prépare src/data/initialDocuments.ts
+Assure-toi que le fichier a cette structure EXACTE :
+
+```typescript
+export const initialDocuments: Record<string, string> = {
+  "identity": ``, // Vide pour l'instant
+  "architecture": ``,
+  "design_system": ``,
+  "overview": ``,
+  "workflow": ``
+};
+6. Vérifie documentStore.initialize()
+Confirme que App.tsx ou index.tsx appelle documentStore.initialize() au démarrage.
+7. Variables d’environnement
+Confirme présence fichier .env avec :
+code 
+Code
+
+VITE_GEMINI_API_KEY=
+(valeur vide pour l’instant)
+Format Réponse Attendu
+Réponds UNIQUEMENT avec ce format :
+code 
+Code
+
+✅ STRUCTURE PROJET VALIDÉE
+
+## Fichiers Créés (X total)
+[Liste arborescente complète]
+
+## Fichiers Critiques
+✅ src/types.ts
+✅ src/data/initialDocuments.ts
+[...]
+
+## Dépendances
+✅ firebase
+✅ @google/generative-ai
+[...]
+
+## Configuration
+✅ tailwind.config.js
+✅ .env créé
+
+## Points d'Attention
+[Tout problème détecté ou fichier manquant]
+
+## Status
+🟢 PRÊT À RECEVOIR DOCUMENTS RÉFÉRENTS
+
+ou
+
+🟡 CORRECTIONS NÉCESSAIRES :
+- [Liste des corrections à faire]
+Une fois cette vérification terminée et que tu réponds “🟢 PRÊT À RECEVOIR DOCUMENTS RÉFÉRENTS”, je te fournirai les 5 documents en texte brut.
+
+——
+
+
 ## 📋 Étape 2 : Intégration Documents Référents
 
 **Instruction pour GAS (à envoyer APRÈS validation Étape 1.3) :**
